@@ -1,0 +1,31 @@
+<h2>Register for Olive O'Shoppe</h2>
+{% if form.errors %}
+    <div class="alert alert-danger">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label>{{ form.username.label }}</label>
+        {{ form.username }}
+    </div>
+    <div>
+        <label>{{ form.email.label }}</label>
+        {{ form.email }}
+    </div>
+    <div>
+        <label>{{ form.password1.label }}</label>
+        {{ form.password1 }}
+    </div>
+    <div>
+        <label>{{ form.password2.label }}</label>
+        {{ form.password2 }}
+    </div>
+    <button type="submit">Register</button>
+</form>
+<p>Already have an account? <a href="{% url 'login' %}">Login here</a></p> 

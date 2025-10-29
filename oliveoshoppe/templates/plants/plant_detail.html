@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ plant.name }} - Olive O'Shoppe{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'plant_list' %}">Plants</a></li>
+            <li class="breadcrumb-item active">{{ plant.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Plant Details -->
+    <div class="card">
+        <div class="row g-0">
+            <!-- Image Section -->
+            <div class="col-md-6">
+                {% if plant.image %}
+                <img src="{{ plant.image.url }}" alt="{{ plant.name }}" class="img-fluid rounded-start" style="max-height: 500px; width: 100%; object-fit: cover;">
+                {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 500px;">
+                    <i class="fas fa-leaf fa-3x text-muted"></i>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Details Section -->
+            <div class="col-md-6">
+                <div class="card-body p-4">
+                    <h1 class="card-title h2 mb-3">{{ plant.name }}</h1>
+                    
+                    <div class="mb-4">
+                        <span class="h3 text-success">₱{{ plant.price }}</span>
+                        {% if plant.stock > 0 %}
+                        <span class="ms-3 badge bg-success">
+                            In Stock ({{ plant.stock }})
+                        </span>
+                        {% else %}
+                        <span class="ms-3 badge bg-danger">
+                            Out of Stock
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="card-text">{{ plant.description }}</p>
+                    </div>
+
+                    {% if user.is_staff %}
+                    <div class="d-flex gap-2 mb-4">
+                        <a href="{% url 'plant_edit' plant.id %}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Edit Plant
+                        </a>
+                        <a href="{% url 'plant_delete' plant.id %}" 
+                           class="btn btn-outline-danger">
+                            <i class="fas fa-trash me-2"></i>Delete Plant
+                        </a>
+                    </div>
+                    {% else %}
+                    {% if plant.stock > 0 %}
+                    <form method="post" action="{% url 'add_to_cart' plant.id %}" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="1" min="1" max="{{ plant.stock }}"
+                               class="form-control" style="width: 80px;">
+                        <button type="submit" class="btn btn-success flex-grow-1">
+                            <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+
+                    <!-- Plant Care -->
+                    <div class="mt-4 pt-4 border-top">
+                        <h2 class="h5 mb-3">Plant Care</h2>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-tint text-primary me-2"></i>Water regularly, keeping soil moist but not waterlogged</li>
+                            <li><i class="fas fa-sun text-warning me-2"></i>Place in bright, indirect sunlight</li>
+                            <li><i class="fas fa-thermometer-half text-danger me-2"></i>Maintain room temperature between 65-80°F</li>
+                            <li><i class="fas fa-seedling text-success me-2"></i>Fertilize monthly during growing season</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shop - OliveOshoppe{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form class="d-flex" method="get">
+                <input class="form-control me-2" type="search" placeholder="Search plants..." 
+                       name="q" value="{{ request.GET.q|default:'' }}">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" name="sort" onchange="this.form.submit()">
+                <option value="name" {% if sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price (Low to High)</option>
+                <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price (High to Low)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Plants Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for plant in plants %}
+        <div class="col">
+            <div class="card h-100">
+                {% if plant.image %}
+                    <img src="{{ plant.image.url }}" class="card-img-top" alt="{{ plant.name }}"
+                         style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-light d-flex align-items-center justify-content-center" 
+                         style="height: 200px;">
+                        <i class="fas fa-leaf fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ plant.name }}</h5>
+                    <p class="card-text text-muted">{{ plant.description|truncatewords:20 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">₱{{ plant.price }}</h6>
+                        <span class="badge {% if plant.stock > 10 %}bg-success{% elif plant.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                            {% if plant.stock > 0 %}{{ plant.stock }} in stock{% else %}Out of stock{% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    {% if plant.stock > 0 %}
+                        <form method="post" action="{% url 'add_to_cart' plant.id %}" class="d-flex gap-2">
+                            {% csrf_token %}
+                            <input type="number" name="quantity" value="1" min="1" max="{{ plant.stock }}"
+                                   class="form-control form-control-sm" style="width: 70px;">
+                            <button type="submit" class="btn btn-success flex-grow-1">
+                                <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </form>
+                    {% else %}
+                        <button class="btn btn-secondary w-100" disabled>Out of Stock</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-leaf fa-3x text-muted mb-3"></i>
+            <h4>No plants found</h4>
+            <p class="text-muted">Try adjusting your search or check back later for new additions.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if plants.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if plants.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ plants.previous_page_number }}&q={{ request.GET.q|default:'' }}&sort={{ sort|default:'name' }}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+            {% endif %}
+
+            {% for num in plants.paginator.page_range %}
+                {% if plants.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}&q={{ request.GET.q|default:'' }}&sort={{ sort|default:'name' }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if plants.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ plants.next_page_number }}&q={{ request.GET.q|default:'' }}&sort={{ sort|default:'name' }}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %} 

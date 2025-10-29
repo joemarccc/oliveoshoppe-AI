@@ -1,0 +1,59 @@
+{% extends 'auth/base_auth.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block auth_subtitle %}Welcome back! Please login to your account.{% endblock %}
+
+{% block auth_content %}
+<form method="post" class="needs-validation" novalidate>
+    {% csrf_token %}
+    
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+               id="username" name="username" placeholder="Username"
+               value="{{ form.username.value|default:'' }}" required>
+        <label for="username">Username</label>
+        {% if form.username.errors %}
+            <div class="invalid-feedback">
+                {{ form.username.errors|join:", " }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+               id="password" name="password" placeholder="Password" required>
+        <label for="password">Password</label>
+        {% if form.password.errors %}
+            <div class="invalid-feedback">
+                {{ form.password.errors|join:", " }}
+            </div>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-auth">
+        <i class="fas fa-sign-in-alt me-2"></i> Login
+    </button>
+
+    <div class="auth-footer">
+        Don't have an account? <a href="{% url 'register' %}">Register here</a>
+    </div>
+</form>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %} 

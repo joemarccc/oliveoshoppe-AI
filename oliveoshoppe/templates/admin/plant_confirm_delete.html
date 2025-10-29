@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Plant - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3">
+                <h2>Delete Plant</h2>
+                <a href="{% url 'plant_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Plants
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation -->
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3 mb-md-0">
+                    {% if plant.image %}
+                    <img src="{{ plant.image.url }}" alt="{{ plant.name }}" class="img-fluid rounded">
+                    {% else %}
+                    <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 200px;">
+                        <i class="fas fa-leaf fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-9">
+                    <h3 class="mb-3">{{ plant.name }}</h3>
+                    <p class="text-muted mb-3">{{ plant.description|truncatewords:50 }}</p>
+                    <div class="d-flex align-items-center mb-3">
+                        <h5 class="me-3 mb-0">₱{{ plant.price }}</h5>
+                        <span class="badge {% if plant.stock > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                            Stock: {{ plant.stock }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-top">
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Warning</h5>
+                    <p class="mb-0">This action cannot be undone. All data associated with this plant will be permanently deleted.</p>
+                </div>
+
+                <form method="post" class="d-flex justify-content-end gap-2">
+                    {% csrf_token %}
+                    <a href="{% url 'plant_list' %}" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Plant
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

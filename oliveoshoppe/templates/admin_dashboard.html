@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="border-bottom pb-2">Admin Dashboard</h2>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Quick Actions</h5>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'plant_create' %}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Add New Plant
+                        </a>
+                        <a href="{% url 'plant_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-leaf me-2"></i>Manage Plants
+                        </a>
+                        <a href="{% url 'admin_orders' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-box me-2"></i>View Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h6 class="card-title">Total Sales</h6>
+                    <h3 class="mb-0">₱{{ total_sales|floatformat:2 }}</h3>
+                    <small class="text-white-50">
+                        {% if sales_growth >= 0 %}
+                            <i class="fas fa-arrow-up"></i>
+                            {{ sales_growth|floatformat:1 }}% from last month
+                        {% else %}
+                            <i class="fas fa-arrow-down"></i>
+                            {{ sales_growth|floatformat:1|cut:'-' }}% from last month
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h6 class="card-title">Orders</h6>
+                    <h3 class="mb-0">{{ orders_count }}</h3>
+                    <small class="text-white-50">{{ pending_orders }} pending</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h6 class="card-title">Products</h6>
+                    <h3 class="mb-0">{{ products_count }}</h3>
+                    <small class="text-white-50">{{ low_stock }} low stock</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h6 class="card-title">Customers</h6>
+                    <h3 class="mb-0">{{ customers_count }}</h3>
+                    <small class="text-white-50">{{ new_customers }} new this month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Orders</h5>
+                    <a href="{% url 'admin_orders' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Status</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr>
+                                        <td>#{{ order.id }}</td>
+                                        <td>{{ order.user.username }}</td>
+                                        <td>
+                                            <span class="badge {% if order.status == 'completed' %}bg-success
+                                                              {% elif order.status == 'pending' %}bg-warning
+                                                              {% else %}bg-secondary{% endif %}">
+                                                {{ order.status|title }}
+                                            </span>
+                                        </td>
+                                        <td>₱{{ order.total }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-info">Details</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-3">No recent orders</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Products -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Low Stock Products</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_products %}
+                        <div class="list-group list-group-flush">
+                            {% for product in low_stock_products %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ product.name }}</h6>
+                                    <small class="text-muted">{{ product.stock }} in stock</small>
+                                </div>
+                                <a href="{% url 'plant_edit' product.id %}" class="btn btn-sm btn-outline-warning">Update</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-3">No low stock products</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

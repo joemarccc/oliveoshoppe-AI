@@ -1,0 +1,18 @@
+.field-display_image img {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.field-display_image {
+    margin: 10px 0;
+}
+
+/* Style for image preview in list view */
+.column-display_image img {
+    border-radius: 4px;
+    transition: transform 0.2s;
+}
+
+.column-display_image img:hover {
+    transform: scale(1.1);
+} 

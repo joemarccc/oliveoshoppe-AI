@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Plants - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3">
+                <h2>Plant Management</h2>
+                <a href="{% url 'plant_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Add New Plant
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Sort -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search plants..." 
+                               class="form-control">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="name" {% if sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price (Low to High)</option>
+                        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price (High to Low)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'plant_list' %}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-sync-alt me-2"></i>Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Plant List -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Plant</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Last Updated</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plant in plants %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if plant.image %}
+                                    <div class="me-3">
+                                        <img class="rounded-circle" src="{{ plant.image.url }}" alt="{{ plant.name }}" 
+                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                    </div>
+                                    {% else %}
+                                    <div class="me-3 bg-light rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px;">
+                                        <i class="fas fa-leaf text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0">{{ plant.name }}</h6>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>₱{{ plant.price }}</td>
+                            <td>
+                                <span class="badge {% if plant.stock > 10 %}bg-success
+                                                  {% elif plant.stock > 0 %}bg-warning
+                                                  {% else %}bg-danger{% endif %}">
+                                    {{ plant.stock }}
+                                </span>
+                            </td>
+                            <td>{{ plant.updated_at|date:"M d, Y" }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'plant_edit' plant.id %}" class="btn btn-sm btn-outline-primary me-2">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'plant_delete' plant.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="fas fa-leaf fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No plants found.</p>
+                                <a href="{% url 'plant_create' %}" class="btn btn-success mt-2">Add Your First Plant</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if plants.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if plants.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ plants.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+            {% endif %}
+            
+            {% for num in plants.paginator.page_range %}
+                {% if plants.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if plants.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ plants.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %} 
