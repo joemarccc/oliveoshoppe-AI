@@ -25,6 +25,12 @@ urlpatterns = [
     # Django Admin
     path('admin/', admin.site.urls),
     
+    # Accounts app (must come before API to take precedence)
+    path('accounts/', include('accounts.urls')),
+    
+    # Google OAuth - django-allauth
+    path('accounts/', include('allauth.urls')),
+    
     # Root URL points directly to shop view
     path('', views.shop_view, name='home'),
     

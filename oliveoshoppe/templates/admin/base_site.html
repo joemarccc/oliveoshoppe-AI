@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if subtitle %}{{ subtitle }} | {% endif %}{{ site_title|default:_('Django administration') }}
+{% endblock %}
+
+{% block extrastyle %}
+    <link rel="stylesheet" href="{% static 'admin/css/custom.css' %}">
+{% endblock %}
+
+{% block branding %}
+    <div id="site-name">
+        <a href="{% url 'admin:index' %}">
+            <i class="fas fa-leaf" style="margin-right: 10px;"></i>OliveOshoppe Admin
+        </a>
+    </div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

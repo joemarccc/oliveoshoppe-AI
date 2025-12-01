@@ -1,0 +1,264 @@
+{% extends 'auth/base_auth.html' %}
+
+{% block title %}Register - Step 2{% endblock %}
+
+{% block auth_subtitle %}Verify your email address{% endblock %}
+
+{% block auth_content %}
+<div class="registration-progress mb-4">
+    <div class="progress" style="height: 5px;">
+        <div class="progress-bar bg-success" role="progressbar" style="width: 66%;" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="progress-steps mt-2">
+        <div class="step completed">
+            <span class="step-number">✓</span>
+            <span class="step-label">Email</span>
+        </div>
+        <div class="step active">
+            <span class="step-number">2</span>
+            <span class="step-label">Verify OTP</span>
+        </div>
+        <div class="step">
+            <span class="step-number">3</span>
+            <span class="step-label">Details</span>
+        </div>
+    </div>
+</div>
+
+<div class="otp-verification-info mb-4">
+    <div class="alert alert-info" role="alert">
+        <i class="fas fa-envelope me-2"></i>
+        <strong>Verification Code Sent!</strong>
+        <p class="mb-0 mt-2">We've sent a 6-digit verification code to <strong>{{ email }}</strong></p>
+    </div>
+</div>
+
+<form method="post" class="needs-validation" novalidate>
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="otp_code" class="form-label">
+            <i class="fas fa-key me-2"></i>Verification Code
+        </label>
+        <input type="text" class="form-control otp-input" 
+               id="otp_code" name="otp_code" placeholder="000000"
+               maxlength="6" inputmode="numeric" pattern="[0-9]{6}" required autofocus>
+        <small class="form-text text-muted">
+            <i class="fas fa-info-circle me-1"></i>Enter the 6-digit code from your email
+        </small>
+    </div>
+
+    <button type="submit" class="btn-auth w-100">
+        <i class="fas fa-check me-2"></i>Verify Code
+    </button>
+
+    <div class="otp-actions mt-3">
+        <p class="text-center text-muted small">
+            <i class="fas fa-clock me-1"></i>Code expires in 10 minutes
+        </p>
+        <div class="text-center">
+            <button type="button" class="btn-link" id="resendBtn" onclick="resendOTP(event)">
+                <i class="fas fa-redo me-1"></i>Resend Code
+            </button>
+            <span id="resendTimer" class="text-muted small"></span>
+        </div>
+    </div>
+
+    <div class="auth-divider mt-4">
+        <span>or</span>
+    </div>
+
+    <div class="text-center">
+        <a href="{% url 'register_step1_email' %}" class="btn-link-sm">
+            <i class="fas fa-arrow-left me-1"></i>Change email
+        </a>
+    </div>
+</form>
+
+<style>
+    .otp-input {
+        font-size: 24px;
+        letter-spacing: 8px;
+        text-align: center;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+        padding: 15px;
+    }
+
+    .otp-input::placeholder {
+        letter-spacing: 4px;
+    }
+
+    .otp-actions {
+        text-align: center;
+    }
+
+    .btn-link {
+        background: none;
+        border: none;
+        color: #2c5530;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 14px;
+        padding: 0;
+    }
+
+    .btn-link:hover:not(:disabled) {
+        text-decoration: underline;
+    }
+
+    .btn-link:disabled {
+        color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .btn-link-sm {
+        color: #2c5530;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .btn-link-sm:hover {
+        text-decoration: underline;
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        flex: 1;
+        position: relative;
+    }
+
+    .step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        width: 50%;
+        height: 2px;
+        background-color: #e0e0e0;
+        z-index: 0;
+    }
+
+    .step.active .step-number,
+    .step.completed .step-number {
+        background: #2c5530;
+        color: white;
+    }
+
+    .step.completed:not(:last-child)::after {
+        background-color: #2c5530;
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        z-index: 1;
+    }
+
+    .step-label {
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+    }
+
+    .step.active .step-label,
+    .step.completed .step-label {
+        color: #2c5530;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const resendBtn = document.getElementById('resendBtn');
+    const resendTimer = document.getElementById('resendTimer');
+    const otpInput = document.getElementById('otp_code');
+    
+    // Auto-format OTP input to only accept numbers
+    otpInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+    });
+
+    // Resend functionality
+    let resendCount = 0;
+    let resendCountdown = 0;
+
+    window.resendOTP = function(e) {
+        e.preventDefault();
+        if (resendBtn.disabled) return;
+        
+        if (resendCount < 3) {
+            resendCount++;
+            // Show loading state
+            const originalText = resendBtn.innerHTML;
+            resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sending...';
+            resendBtn.disabled = true;
+            
+            // Optional: Make actual API call to resend OTP
+            fetch('{% url "resend_otp" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Verification code sent! Check your email.');
+                    resendBtn.innerHTML = originalText;
+                    startResendTimer();
+                } else {
+                    alert('Failed to resend code: ' + (data.error || 'Try again'));
+                    resendBtn.innerHTML = originalText;
+                    resendBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error sending code. Please try again.');
+                resendBtn.innerHTML = originalText;
+                resendBtn.disabled = false;
+            });
+        } else {
+            alert('Maximum resend attempts (3) reached. Please try again later.');
+        }
+    };
+
+    function startResendTimer() {
+        resendCountdown = 60;
+        resendBtn.disabled = true;
+        updateTimer();
+    }
+
+    function updateTimer() {
+        if (resendCountdown > 0) {
+            resendTimer.textContent = `(${resendCountdown}s)`;
+            resendCountdown--;
+            setTimeout(updateTimer, 1000);
+        } else {
+            resendBtn.disabled = false;
+            resendTimer.textContent = '';
+        }
+    }
+
+    // Start initial timer
+    startResendTimer();
+});
+</script>
+{% endblock %}

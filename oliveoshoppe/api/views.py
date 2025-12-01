@@ -58,7 +58,6 @@ def register_view(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
-        is_staff = request.POST.get('is_staff') == 'on'
         
         if not all([username, email, password, confirm_password]):
             messages.error(request, 'Please fill in all fields')
@@ -75,8 +74,7 @@ def register_view(request):
         user = User.objects.create_user(
             username=username,
             email=email,
-            password=password,
-            is_staff=is_staff
+            password=password
         )
         
         # Create a cart for the user
@@ -84,8 +82,6 @@ def register_view(request):
         
         login(request, user)
         messages.success(request, 'Registration successful!')
-        if user.is_staff:
-            return redirect('admin_dashboard')
         return redirect('shop')
     
     return render(request, 'auth/register.html')
@@ -186,42 +182,76 @@ def api_home(request):
 
 @csrf_exempt
 @rate_limit(requests_per_minute=5)
+@csrf_exempt
+@rate_limit(requests_per_minute=5)
 def register_api(request):
+    """Register user via API - uses Supabase backend"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     try:
         data = json.loads(request.body)
         username = data.get('username')
-        password = data.get('password')
+        password = data.get('password1')
         email = data.get('email')
+        phone_number = data.get('phone_number', '')
 
+        # Validate required fields
         if not all([username, password, email]):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
+            return JsonResponse({'error': 'Missing required fields (username, password1, email)'}, status=400)
 
+        # Check if user already exists in Django
         if User.objects.filter(username=username).exists():
             return JsonResponse({'error': 'Username already exists'}, status=400)
 
-        user = User.objects.create(
-            username=username,
-            password=make_password(password),
-            email=email
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'Email already exists'}, status=400)
+
+        # Register with Supabase
+        from accounts.supabase_auth import signup_with_supabase
+        supabase_result = signup_with_supabase(
+            email=email,
+            password=password,
+            full_name=username,
+            phone_number=phone_number
         )
 
-        return JsonResponse({
-            'message': 'User created successfully',
-            'user': {
-                'username': user.username,
-                'email': user.email
-            }
-        }, status=201)
+        if supabase_result['success']:
+            # Also create Django user for compatibility
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            
+            # Create user profile
+            UserProfile.objects.update_or_create(
+                user=user,
+                defaults={'phone_number': phone_number}
+            )
+
+            return JsonResponse({
+                'message': 'User registered successfully',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                }
+            }, status=201)
+        else:
+            return JsonResponse({
+                'error': supabase_result.get('error', 'Registration failed')
+            }, status=400)
 
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
 @rate_limit(requests_per_minute=5)
 def login_api(request):
+    """Login user via API - uses Supabase backend"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
@@ -231,26 +261,34 @@ def login_api(request):
         password = data.get('password')
 
         if not all([username, password]):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
+            return JsonResponse({'error': 'Missing required fields (username, password)'}, status=400)
 
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
+        # Try Supabase login
+        from accounts.supabase_auth import login_with_supabase
+        supabase_result = login_with_supabase(username, password)
+
+        if supabase_result['success']:
+            # Get Django user for session compatibility
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                user = None
+
+            return JsonResponse({
+                'message': 'Login successful',
+                'token': supabase_result.get('token'),
+                'user': {
+                    'id': supabase_result['user'].id,
+                    'email': supabase_result['user'].user_metadata.get('email', '') if hasattr(supabase_result['user'], 'user_metadata') else ''
+                }
+            }, status=200)
+        else:
             return JsonResponse({'error': 'Invalid credentials'}, status=401)
-
-        if not check_password(password, user.password):
-            return JsonResponse({'error': 'Invalid credentials'}, status=401)
-
-        token = jwt.encode(
-            {'user_id': user.id, 'username': user.username},
-            settings.JWT_SECRET_KEY,
-            algorithm=settings.JWT_ALGORITHM
-        )
-
-        return JsonResponse({'token': token})
 
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
 @rate_limit(requests_per_minute=10)

@@ -3,12 +3,6 @@ from . import views
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
-    # Authentication URLs
-    path('login/', views.login_view, name='login'),
-    path('register/', views.register_view, name='register'),
-    path('logout/', views.logout_view, name='logout'),
-    path('profile/', views.user_profile, name='profile'),
-    
     # Dashboard URLs
     path('dashboard/', views.dashboard, name='dashboard'),
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),

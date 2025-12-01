@@ -1,0 +1,197 @@
+{% extends 'auth/base_auth.html' %}
+
+{% block title %}Register - Step 3{% endblock %}
+
+{% block auth_subtitle %}Complete your registration{% endblock %}
+
+{% block auth_content %}
+<div class="registration-progress mb-4">
+    <div class="progress" style="height: 5px;">
+        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="progress-steps mt-2">
+        <div class="step completed">
+            <span class="step-number">✓</span>
+            <span class="step-label">Email</span>
+        </div>
+        <div class="step completed">
+            <span class="step-number">✓</span>
+            <span class="step-label">Verify</span>
+        </div>
+        <div class="step active">
+            <span class="step-number">3</span>
+            <span class="step-label">Details</span>
+        </div>
+    </div>
+</div>
+
+<div class="email-confirmed mb-4">
+    <div class="alert alert-success" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Email Verified!</strong>
+        <p class="mb-0 mt-2">Email: <strong>{{ email }}</strong></p>
+    </div>
+</div>
+
+<form method="post" id="registerForm" class="needs-validation" novalidate>
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="username" class="form-label">
+            <i class="fas fa-user me-2"></i>Username
+        </label>
+        <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+               id="username" name="username" placeholder="Choose a username"
+               value="{{ form.username.value|default:'' }}" required>
+        {% if form.username.errors %}
+            <div class="errorlist">
+                {% for error in form.username.errors %}
+                    <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="password1" class="form-label">
+            <i class="fas fa-lock me-2"></i>Password
+        </label>
+        <input type="password" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" 
+               id="password1" name="password1" placeholder="Create a strong password" required>
+        {% if form.password1.errors %}
+            <div class="errorlist">
+                {% for error in form.password1.errors %}
+                    <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <small class="form-text text-muted d-block mt-1">
+            <i class="fas fa-info-circle me-1"></i>
+            Password should be at least 8 characters long
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label for="password2" class="form-label">
+            <i class="fas fa-lock me-2"></i>Confirm Password
+        </label>
+        <input type="password" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" 
+               id="password2" name="password2" placeholder="Confirm your password" required>
+        {% if form.password2.errors %}
+            <div class="errorlist">
+                {% for error in form.password2.errors %}
+                    <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="phone_number" class="form-label">
+            <i class="fas fa-phone me-2"></i>Phone Number
+        </label>
+        <input type="tel" class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}" 
+               id="phone_number" name="phone_number" placeholder="+63 9xx xxx xxxx (optional)">
+        <small class="form-text text-muted">
+            <i class="fas fa-info-circle me-1"></i>We'll use this for order updates
+        </small>
+        {% if form.phone_number.errors %}
+            <div class="errorlist">
+                {% for error in form.phone_number.errors %}
+                    <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn-auth w-100">
+        <i class="fas fa-check me-2"></i>Create Account
+    </button>
+
+    <div class="auth-divider">
+        <span>Already have an account?</span>
+    </div>
+
+    <div class="auth-footer">
+        <p>Already registered? <a href="{% url 'login' %}">Login here</a></p>
+    </div>
+</form>
+
+<style>
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        flex: 1;
+        position: relative;
+    }
+
+    .step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        width: 50%;
+        height: 2px;
+        background-color: #e0e0e0;
+        z-index: 0;
+    }
+
+    .step.active .step-number,
+    .step.completed .step-number {
+        background: #2c5530;
+        color: white;
+    }
+
+    .step.completed:not(:last-child)::after {
+        background-color: #2c5530;
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        z-index: 1;
+    }
+
+    .step-label {
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+    }
+
+    .step.active .step-label,
+    .step.completed .step-label {
+        color: #2c5530;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+// Form validation
+document.getElementById('registerForm').addEventListener('submit', function(event) {
+    const password1 = document.getElementById('password1').value;
+    const password2 = document.getElementById('password2').value;
+    
+    if (password1 !== password2) {
+        event.preventDefault();
+        event.stopPropagation();
+        alert('Passwords do not match!');
+        return false;
+    }
+});
+</script>
+{% endblock %}

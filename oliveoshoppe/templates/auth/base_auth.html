@@ -7,85 +7,358 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #f8f9fa;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .auth-container {
-            flex: 1;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c5530 0%, #3d7a44 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
         }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
         .auth-card {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            animation: slideUp 0.5s ease-out;
         }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .auth-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 40px;
         }
+
         .auth-header .logo {
+            font-size: 48px;
             color: #2c5530;
-            font-size: 2rem;
-            margin-bottom: 1rem;
+            margin-bottom: 15px;
+            display: block;
         }
+
+        .auth-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
         .form-control:focus {
             border-color: #2c5530;
-            box-shadow: 0 0 0 0.25rem rgba(44, 85, 48, 0.25);
+            box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.1);
+            outline: none;
         }
+
         .btn-auth {
-            background-color: #2c5530;
-            border-color: #2c5530;
-            color: white;
             width: 100%;
-            padding: 0.75rem;
-            font-size: 1rem;
-            margin-top: 1rem;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2c5530 0%, #3d7a44 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
         }
+
         .btn-auth:hover {
-            background-color: #3d7a44;
-            border-color: #3d7a44;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(44, 85, 48, 0.3);
             color: white;
         }
+
+        .btn-auth:active {
+            transform: translateY(0);
+        }
+
+        .auth-divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .auth-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .auth-divider span {
+            background: white;
+            padding: 0 10px;
+            color: #999;
+            font-size: 13px;
+            position: relative;
+        }
+
         .auth-footer {
             text-align: center;
-            margin-top: 1.5rem;
-            color: #6c757d;
+            margin-top: 20px;
         }
+
         .auth-footer a {
             color: #2c5530;
             text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
         }
+
         .auth-footer a:hover {
+            color: #3d7a44;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .errorlist li {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #2c5530 0%, #3d7a44 100%);
+            color: white;
+            border: none;
+            border-radius: 20px 20px 0 0;
+            border-bottom: none;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .modal-body {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .modal-icon {
+            font-size: 60px;
+            color: #2c5530;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .otp-input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            border-color: #2c5530;
+            box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.1);
+            outline: none;
+        }
+
+        .btn-modal {
+            background: linear-gradient(135deg, #2c5530 0%, #3d7a44 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-modal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(44, 85, 48, 0.3);
+            color: white;
+        }
+
+        .resend-link {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .resend-link a {
+            color: #2c5530;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .resend-link a:hover {
+            color: #3d7a44;
+        }
+
+        /* Form Check Styles */
+        .form-check {
+            padding-left: 0;
+        }
+
+        .form-check-input {
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #2c5530;
+            transition: all 0.3s ease;
+        }
+
+        .form-check-input:hover {
+            border-color: #2c5530;
+        }
+
+        .form-check-input:checked {
+            background-color: #2c5530;
+            border-color: #2c5530;
+        }
+
+        .form-check-label {
+            margin-left: 8px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .form-check-label a {
+            color: #2c5530;
             text-decoration: underline;
+            font-weight: 600;
         }
-        .form-floating > label {
-            color: #6c757d;
+
+        .form-check-label a:hover {
+            color: #3d7a44;
         }
-        .invalid-feedback {
-            font-size: 0.875rem;
-        }
+
+        /* Additional styles here */
     </style>
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <div class="logo">
-                    <i class="fas fa-leaf"></i>
-                </div>
-                <h1 class="h3">OliveOshoppe</h1>
-                <p class="text-muted">{% block auth_subtitle %}{% endblock %}</p>
+                <i class="fas fa-leaf logo"></i>
+                <h1>OliveOshoppe</h1>
+                <p>{% block auth_subtitle %}{% endblock %}</p>
             </div>
 
             {% if messages %}
@@ -101,7 +374,94 @@
         </div>
     </div>
 
+    <!-- Email Verification Modal -->
+    <div class="modal fade" id="emailVerificationModal" tabindex="-1" aria-labelledby="emailVerificationLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emailVerificationLabel">Verify Your Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h6 style="color: #333; margin-bottom: 10px;">Check Your Email</h6>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                        We've sent a verification code to <strong id="emailAddress"></strong>. Enter the code below to continue.
+                    </p>
+                    <form id="verificationForm">
+                        <div class="otp-input-group">
+                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        </div>
+                        <button type="submit" class="btn-modal">Verify & Continue</button>
+                    </form>
+                    <div class="resend-link">
+                        Didn't receive the code? <a id="resendLink">Resend</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'auth/terms_modal.html' %}
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // OTP Input auto-focus
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && index > 0 && e.target.value === '') {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Show verification modal
+        function showEmailVerificationModal(email) {
+            document.getElementById('emailAddress').textContent = email;
+            const modal = new bootstrap.Modal(document.getElementById('emailVerificationModal'));
+            modal.show();
+        }
+
+        // Form submission validation for registration/login
+        const registerForm = document.getElementById('registerForm');
+        const loginForm = document.getElementById('loginForm');
+        const termsCheck = document.getElementById('terms_check');
+        const termsCheckLogin = document.getElementById('terms_check_login');
+
+        if (registerForm) {
+            registerForm.addEventListener('submit', function(e) {
+                if (!termsCheck || !termsCheck.checked) {
+                    e.preventDefault();
+                    alert('Please accept the Terms & Conditions to continue');
+                    return false;
+                }
+            });
+        }
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                if (!termsCheckLogin || !termsCheckLogin.checked) {
+                    e.preventDefault();
+                    alert('Please accept the Terms & Conditions to continue');
+                    return false;
+                }
+            });
+        }
+    </script>
 </body>
 </html> 
