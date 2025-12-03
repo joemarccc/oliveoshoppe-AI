@@ -27,7 +27,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-g_lc@xwpy1@@b)n^n@6en
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='oliveoshoppe.onrender.com,localhost,127.0.0.1').split(',')]
 
 
 # Application definition
