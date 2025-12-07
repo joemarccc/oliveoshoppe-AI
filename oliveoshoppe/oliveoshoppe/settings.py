@@ -24,10 +24,17 @@ from decouple import config
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-g_lc@xwpy1@@b)n^n@6en==n6hw1wsk9=l_e^1h&)npod(wy31')
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on in production!   
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='oliveoshoppe.onrender.com,localhost,127.0.0.1').split(',')]
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='oliveoshoppe.onrender.com,localhost,127.0.0.1'
+).split(',')
+
+# Strip whitespace and remove empty strings
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
+
 
 
 # Application definition
