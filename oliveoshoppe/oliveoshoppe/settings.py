@@ -27,13 +27,13 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-g_lc@xwpy1@@b)n^n@6en
 # SECURITY WARNING: don't run with debug turned on in production!   
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config(
+raw_hosts = config(
     'ALLOWED_HOSTS',
     default='oliveoshoppe.onrender.com,localhost,127.0.0.1'
-).split(',')
+)
 
-# Strip whitespace and remove empty strings
-ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
+ALLOWED_HOSTS = [h.strip() for h in raw_hosts.split(',') if h.strip()]
+
 
 
 
