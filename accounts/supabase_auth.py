@@ -2,8 +2,8 @@
 Supabase Authentication Module
 Handles user signup, login, profile management with Supabase
 """
-
-from supabase import create_client
+import httpx
+from supabase import ClientOptions, create_client
 from decouple import config
 import logging
 
@@ -14,8 +14,38 @@ SUPABASE_URL = config('SUPABASE_URL', default='')
 SUPABASE_ANON_KEY = config('SUPABASE_ANON_KEY', default='')
 SUPABASE_SERVICE_ROLE_KEY = config('SUPABASE_SERVICE_ROLE_KEY', default='')
 
-supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-supabase_admin = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+def _make_supabase_client(key: str):
+    """Create a Supabase client with a prebuilt httpx client to avoid proxy kwarg issues."""
+    if not SUPABASE_URL or not key:
+        logger.warning("Supabase URL or key missing; skipping client bootstrap")
+        return None
+
+    http_client = httpx.Client(http2=True, timeout=30.0)
+    options = ClientOptions(httpx_client=http_client)
+
+    try:
+        return create_client(SUPABASE_URL, key, options=options)
+    except TypeError as exc:
+        logger.error("Supabase client init failed (proxy/httpx mismatch): %s", exc)
+        raise
+
+
+supabase = _make_supabase_client(SUPABASE_ANON_KEY)
+supabase_admin = _make_supabase_client(SUPABASE_SERVICE_ROLE_KEY)
+
+
+def _require_supabase():
+    if supabase is None:
+        raise RuntimeError("Supabase client not initialized. Check SUPABASE_URL and SUPABASE_ANON_KEY.")
+    return supabase
+
+
+def _require_supabase_admin():
+    if supabase_admin is None:
+        raise RuntimeError(
+            "Supabase admin client not initialized. Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
+        )
+    return supabase_admin
 
 # ============================================
 # EMAIL VERIFICATION (Registration - Confirmation Link)
@@ -27,6 +57,7 @@ def send_confirmation_email(email, redirect_url=None):
     User clicks link in email to verify and proceed to step 3
     """
     try:
+        supabase_client = _require_supabase()
         import uuid
         # Generate a temporary password (user will set real password in step 3)
         temp_password = str(uuid.uuid4())[:16]
@@ -46,7 +77,7 @@ def send_confirmation_email(email, redirect_url=None):
         print(f"[DEBUG] Supabase URL: {SUPABASE_URL}")
         
         # Supabase sign_up sends a confirmation email with magic link
-        response = supabase.auth.sign_up(signup_options)
+        response = supabase_client.auth.sign_up(signup_options)
         
         print(f"[DEBUG] Sign_up response: {response}")
         logger.info(f"Confirmation email sent to {email}")
@@ -69,7 +100,8 @@ def verify_confirmation_token(token):
     Verify confirmation token from email link
     """
     try:
-        response = supabase.auth.verify_otp({
+        supabase_client = _require_supabase()
+        response = supabase_client.auth.verify_otp({
             'token': token,
             'type': 'signup'
         })
@@ -112,8 +144,10 @@ def signup_with_supabase(email, password, full_name=None, phone_number=None):
     Creates user in auth.users and creates profile entry
     """
     try:
+        supabase_client = _require_supabase()
+        supabase_admin_client = _require_supabase_admin()
         # Create user in Supabase Auth
-        auth_response = supabase.auth.sign_up({
+        auth_response = supabase_client.auth.sign_up({
             "email": email,
             "password": password,
             "options": {
@@ -129,7 +163,7 @@ def signup_with_supabase(email, password, full_name=None, phone_number=None):
             
             # Create profile in profiles table
             try:
-                profile_response = supabase_admin.table('profiles').insert({
+                profile_response = supabase_admin_client.table('profiles').insert({
                     'id': user_id,
                     'email': email,
                     'full_name': full_name or email.split('@')[0],
@@ -174,7 +208,8 @@ def login_with_supabase(email, password):
     Returns user and session token
     """
     try:
-        auth_response = supabase.auth.sign_in_with_password({
+        supabase_client = _require_supabase()
+        auth_response = supabase_client.auth.sign_in_with_password({
             "email": email,
             "password": password
         })
@@ -208,7 +243,8 @@ def login_with_supabase(email, password):
 def get_profile(user_id):
     """Get user profile from Supabase"""
     try:
-        response = supabase.table('profiles').select('*').eq('id', user_id).single().execute()
+        supabase_client = _require_supabase()
+        response = supabase_client.table('profiles').select('*').eq('id', user_id).single().execute()
         return response.data if response.data else None
     except Exception as e:
         logger.error(f"Error fetching profile for {user_id}: {str(e)}")
@@ -217,7 +253,8 @@ def get_profile(user_id):
 def update_profile(user_id, **kwargs):
     """Update user profile"""
     try:
-        response = supabase_admin.table('profiles').update(kwargs).eq('id', user_id).execute()
+        supabase_admin_client = _require_supabase_admin()
+        response = supabase_admin_client.table('profiles').update(kwargs).eq('id', user_id).execute()
         return {
             'success': True,
             'data': response.data
@@ -236,7 +273,8 @@ def update_profile(user_id, **kwargs):
 def reset_password(email):
     """Send password reset email"""
     try:
-        response = supabase.auth.reset_password_for_email(email)
+        supabase_client = _require_supabase()
+        response = supabase_client.auth.reset_password_for_email(email)
         logger.info(f"Password reset email sent to {email}")
         return {
             'success': True,
@@ -256,7 +294,8 @@ def reset_password(email):
 def verify_token(token):
     """Verify a JWT token"""
     try:
-        response = supabase.auth.get_user(token)
+        supabase_client = _require_supabase()
+        response = supabase_client.auth.get_user(token)
         return {
             'success': True,
             'user': response.user
@@ -275,7 +314,8 @@ def verify_token(token):
 def logout():
     """Logout current user"""
     try:
-        supabase.auth.sign_out()
+        supabase_client = _require_supabase()
+        supabase_client.auth.sign_out()
         logger.info("User logged out successfully")
         return {
             'success': True,
