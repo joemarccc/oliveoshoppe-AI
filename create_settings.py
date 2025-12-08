@@ -1,4 +1,7 @@
-from pathlib import Path
+#!/usr/bin/env python
+import os
+
+settings_content = """from pathlib import Path
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -120,3 +123,10 @@ SOCIALACCOUNT_PROVIDERS = {
 SUPABASE_URL = config('SUPABASE_URL', default='')
 SUPABASE_ANON_KEY = config('SUPABASE_ANON_KEY', default='')
 SUPABASE_SERVICE_ROLE_KEY = config('SUPABASE_SERVICE_ROLE_KEY', default='')
+"""
+
+target_path = os.path.join(os.path.dirname(__file__), 'oliveoshoppe', 'settings.py')
+with open(target_path, 'w', encoding='utf-8') as f:
+    f.write(settings_content)
+
+print(f'Created {target_path}')
