@@ -1,1 +1,1 @@
-web: python manage.py collectstatic --noinput && gunicorn oliveoshoppe.wsgi:application
+web: python manage.py collectstatic --noinput && gunicorn wsgi:application
