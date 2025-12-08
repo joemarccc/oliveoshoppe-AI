@@ -1,5 +1,5 @@
 <!-- Terms & Conditions Modal Template -->
-<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
@@ -200,36 +200,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle agree button click
     if (agreeBtn) {
         agreeBtn.addEventListener('click', function() {
-            console.log('Agree button clicked');
-            
-            // Set the appropriate checkbox based on what's available
-            let checkedOne = false;
-            
+            // Set any available checkbox to checked, but always allow closing
             if (termsCheck) {
                 termsCheck.checked = true;
-                checkedOne = true;
-                console.log('Set termsCheck to true');
             }
-            
             if (termsCheckLogin) {
                 termsCheckLogin.checked = true;
-                checkedOne = true;
-                console.log('Set termsCheckLogin to true');
             }
-            
-            // Hide the modal
-            if (termsModal && checkedOne) {
+
+            // Properly hide the modal and remove backdrop
+            if (termsModal) {
                 const modalInstance = bootstrap.Modal.getInstance(termsModal);
                 if (modalInstance) {
                     modalInstance.hide();
-                } else {
-                    // If no instance exists, create and hide
-                    new bootstrap.Modal(termsModal).hide();
                 }
-                console.log('Modal hidden');
                 
-                // Trigger form validation update
-                window.dispatchEvent(new Event('termsAccepted'));
+                // Ensure backdrop is removed after a short delay
+                setTimeout(() => {
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }, 300);
             }
         });
     }
