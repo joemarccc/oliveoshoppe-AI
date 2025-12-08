@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olive Oshoppe - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            color: white;
+        }
+        h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .btn-group-vertical {
+            gap: 1rem;
+        }
+        .btn {
+            font-size: 1.1rem;
+            padding: 0.75rem 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌿 Olive Oshoppe</h1>
+        <p>Welcome to Olive Oshoppe AI - Your Plant Care Companion</p>
+        
+        <div class="btn-group-vertical">
+            {% if user.is_authenticated %}
+                <p>Welcome back, <strong>{{ user.username }}</strong>!</p>
+                <a href="/admin/" class="btn btn-light">Admin Dashboard</a>
+                <a href="/accounts/logout/" class="btn btn-outline-light">Logout</a>
+            {% else %}
+                <a href="/accounts/register/" class="btn btn-light">Get Started</a>
+                <a href="/accounts/login/" class="btn btn-outline-light">Login</a>
+            {% endif %}
+            <a href="/chatbot/" class="btn btn-info">Chat with AI</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-test-key-do-not-use-in-production')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-raw_hosts = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,oliveoshoppe.onrender.com')
+raw_hosts = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,oliveoshoppe.onrender.com,testserver')
 ALLOWED_HOSTS = [h.strip() for h in raw_hosts.split(',') if h.strip()]
 
 INSTALLED_APPS = [
