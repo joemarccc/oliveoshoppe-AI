@@ -4,11 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from .forms import CustomUserCreationForm, UserProfileForm
 from .models import UserProfile
-from .supabase_auth import signup_with_supabase, send_confirmation_email, verify_confirmation_token
+from .supabase_auth import signup_with_supabase, send_confirmation_email, verify_confirmation_token, verify_access_token
 from decouple import config
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -19,18 +22,20 @@ def register_step1_email(request):
     
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
-        terms_check = request.POST.get('terms_check')
         
         if not email:
             messages.error(request, 'Please enter a valid email address.')
             return render(request, 'auth/register_step1.html')
         
-        if not terms_check:
-            messages.error(request, 'Please accept the Terms & Conditions.')
-            return render(request, 'auth/register_step1.html', {'email': email})
-        
-        # Build callback URL for Supabase email link
-        callback_url = request.build_absolute_uri('/accounts/register/callback/')
+        # Build callback URL for Supabase email link - use production URL
+        # Check if we're in production (Render) or local
+        if request.get_host() and 'onrender.com' in request.get_host():
+            callback_url = f"https://{request.get_host()}/auth/confirm/"
+        elif request.get_host() and 'localhost' not in request.get_host() and '127.0.0.1' not in request.get_host():
+            callback_url = request.build_absolute_uri('/auth/confirm/')
+        else:
+            # Local development - still use the proper confirm endpoint
+            callback_url = request.build_absolute_uri('/auth/confirm/')
         
         # Send confirmation email with magic link
         email_result = send_confirmation_email(email, redirect_url=callback_url)
@@ -77,14 +82,16 @@ def register_callback(request):
     Processes token and automatically redirects to Step 3
     """
     token = request.GET.get('token')
+    token_hash = request.GET.get('token_hash')
     email = request.GET.get('email')
+    token_to_verify = token_hash or token
     
-    if not token:
+    if not token_to_verify:
         messages.error(request, 'Invalid confirmation link.')
         return redirect('register_step1_email')
     
     # Verify the confirmation token
-    verify_result = verify_confirmation_token(token)
+    verify_result = verify_confirmation_token(token_to_verify, email=email)
     
     if verify_result['success']:
         # Extract email from the verified user
@@ -272,3 +279,85 @@ def profile(request):
         form = UserProfileForm(instance=user_profile)
     
     return render(request, 'auth/profile.html', {'form': form, 'user_profile': user_profile})
+
+
+# ============================================
+# AUTH CONFIRM VIEWS (Supabase Email Confirmation)
+# ============================================
+
+def auth_confirm(request):
+    """
+    Display the email confirmation page
+    This page handles the Supabase redirect with hash parameters
+    """
+    return render(request, 'auth/auth_confirm.html')
+
+
+@require_http_methods(["POST"])
+def auth_confirm_verify(request):
+    """
+    API endpoint to verify Supabase tokens from the confirmation page
+    Handles access_token, token_hash, or session check
+    """
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    
+    # Check if just verifying session
+    if data.get('check_session'):
+        if request.session.get('email_verified'):
+            return JsonResponse({
+                'success': True,
+                'session_verified': True,
+                'email': request.session.get('registration_email')
+            })
+        return JsonResponse({'success': False, 'error': 'No verified session'})
+    
+    access_token = data.get('access_token')
+    token_hash = data.get('token_hash')
+    token_type = data.get('type', 'signup')
+    
+    # Try to verify access token first
+    if access_token:
+        result = verify_access_token(access_token)
+        if result['success']:
+            user_email = result['user'].email if hasattr(result['user'], 'email') else None
+            
+            # Store in session
+            if user_email:
+                request.session['registration_email'] = user_email
+            request.session['email_verified'] = True
+            request.session['registration_step'] = 2
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Email verified successfully',
+                'email': user_email
+            })
+        else:
+            return JsonResponse({'success': False, 'error': result.get('error', 'Token verification failed')})
+    
+    # Try token_hash verification
+    if token_hash:
+        email = request.session.get('registration_email')
+        result = verify_confirmation_token(token_hash, email=email)
+        
+        if result['success']:
+            user_email = result['user'].email if hasattr(result['user'], 'email') else email
+            
+            if user_email:
+                request.session['registration_email'] = user_email
+            request.session['email_verified'] = True
+            request.session['registration_step'] = 2
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Email verified successfully',
+                'email': user_email
+            })
+        else:
+            return JsonResponse({'success': False, 'error': result.get('error', 'Verification failed')})
+    
+    return JsonResponse({'success': False, 'error': 'No token provided'}, status=400)
+

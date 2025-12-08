@@ -16,7 +16,7 @@
         </div>
         <div class="step active">
             <span class="step-number">2</span>
-            <span class="step-label">Verify OTP</span>
+            <span class="step-label">Verify</span>
         </div>
         <div class="step">
             <span class="step-number">3</span>
@@ -36,61 +36,95 @@
 
 <div class="email-verification-section text-center">
     <div class="mb-4">
-        <div style="font-size: 64px; color: #2c5530; margin-bottom: 20px;">
-            <i class="fas fa-envelope-open"></i>
+        <div class="email-icon-wrapper">
+            <i class="fas fa-envelope-open-text"></i>
         </div>
         <h3 class="fw-bold mb-3">Check Your Email</h3>
         <p class="text-muted mb-2">We've sent a verification link to:</p>
         <div class="email-display">
-            <strong>{{ email }}</strong>
+            <i class="fas fa-at me-2"></i><strong>{{ email }}</strong>
         </div>
     </div>
 
-    <div class="alert alert-info" role="alert">
-        <i class="fas fa-lightbulb me-2"></i>
-        <strong>What to do next:</strong>
-        <ul class="mb-0 mt-2" style="text-align: left;">
-            <li>Check your email inbox</li>
-            <li>Click the verification link in the email</li>
-            <li>You'll automatically proceed to Step 3 to complete your registration</li>
-        </ul>
+    <div class="alert alert-info text-start" role="alert">
+        <h6 class="alert-heading fw-bold mb-2">
+            <i class="fas fa-lightbulb me-2"></i>What to do next:
+        </h6>
+        <ol class="mb-0 ps-3">
+            <li class="mb-1">Open your email inbox</li>
+            <li class="mb-1">Click the verification link in the email</li>
+            <li>Complete your registration on Step 3</li>
+        </ol>
     </div>
 
-    <div class="alert alert-warning" role="alert">
+    <div class="alert alert-warning text-start" role="alert">
         <i class="fas fa-exclamation-triangle me-2"></i>
-        <strong>Tip:</strong> Don't see the email? Check your spam or junk folder. The link expires in 24 hours.
+        <strong>Tip:</strong> Check your spam/junk folder if you don't see the email. The link expires in 24 hours.
     </div>
 
-    <div class="text-center mt-4">
-        <p class="text-muted mb-3">Haven't received the email yet?</p>
-        <a href="{% url 'register_step1_email' %}" class="btn-auth">
-            <i class="fas fa-arrow-left me-2"></i>Back to Email
-        </a>
-        
-        {% if debug %}
-        <div class="mt-4 pt-4 border-top">
-            <p class="text-muted small">Development Mode</p>
-            <form method="post" class="d-inline">
-                {% csrf_token %}
-                <input type="hidden" name="skip_email" value="true">
-                <button type="submit" class="btn btn-sm btn-outline-secondary">
-                    Skip Email (Dev Only)
-                </button>
-            </form>
+    <div class="mt-4 pt-3 border-top">
+        <p class="text-muted small mb-3">Haven't received the email?</p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <a href="{% url 'register_step1_email' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Change Email
+            </a>
+            <button type="button" class="btn btn-outline-success" id="resendBtn" onclick="resendEmail()">
+                <i class="fas fa-redo me-2"></i>Resend Email
+            </button>
         </div>
-        {% endif %}
     </div>
+    
+    {% if debug %}
+    <div class="mt-4 pt-3 border-top">
+        <p class="text-muted small">Development Mode Only</p>
+        <form method="post" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="skip_email" value="true">
+            <button type="submit" class="btn btn-sm btn-secondary">
+                <i class="fas fa-forward me-2"></i>Skip Verification (Dev)
+            </button>
+        </form>
+    </div>
+    {% endif %}
 </div>
 
 <style>
+    .email-icon-wrapper {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2c5530 0%, #3d7a44 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        animation: pulse 2s infinite;
+    }
+    
+    .email-icon-wrapper i {
+        font-size: 40px;
+        color: white;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(44, 85, 48, 0.4);
+        }
+        50% {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px 10px rgba(44, 85, 48, 0);
+        }
+    }
+    
     .email-display {
-        background-color: #f8f9fa;
-        padding: 15px 20px;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 15px 25px;
+        border-radius: 10px;
         margin: 15px 0;
-        word-break: break-all;
         font-size: 16px;
         color: #2c5530;
+        border: 1px solid #dee2e6;
     }
 
     .registration-progress {
@@ -158,4 +192,56 @@
         font-weight: 600;
     }
 </style>
+
+<script>
+let resendCount = 0;
+
+function resendEmail() {
+    if (resendCount >= 3) {
+        alert('Maximum resend attempts reached. Please wait a few minutes before trying again.');
+        return;
+    }
+    
+    const btn = document.getElementById('resendBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+    
+    fetch('{% url "resend_otp" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resendCount++;
+            alert('Verification email resent! Please check your inbox.');
+            // Disable for 60 seconds
+            let countdown = 60;
+            const interval = setInterval(() => {
+                countdown--;
+                btn.innerHTML = `<i class="fas fa-clock me-2"></i>Wait ${countdown}s`;
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            }, 1000);
+        } else {
+            alert('Failed to resend: ' + (data.error || 'Please try again.'));
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        alert('Network error. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+</script>
 {% endblock %}

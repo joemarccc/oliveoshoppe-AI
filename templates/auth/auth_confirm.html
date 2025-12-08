@@ -1,0 +1,185 @@
+{% extends 'auth/base_auth.html' %}
+
+{% block title %}Confirm Email{% endblock %}
+
+{% block auth_subtitle %}Processing your email confirmation...{% endblock %}
+
+{% block auth_content %}
+<div class="confirmation-container text-center">
+    <div id="loading-state">
+        <div class="spinner-border text-success mb-4" role="status" style="width: 60px; height: 60px;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h4 class="text-muted">Verifying your email...</h4>
+        <p class="text-muted small">Please wait while we confirm your email address.</p>
+    </div>
+    
+    <div id="success-state" style="display: none;">
+        <div class="mb-4">
+            <i class="fas fa-check-circle" style="font-size: 80px; color: #2c5530;"></i>
+        </div>
+        <h3 class="fw-bold mb-3" style="color: #2c5530;">Email Confirmed!</h3>
+        <p class="text-muted mb-4">
+            Your email address has been successfully verified.
+        </p>
+        <a href="{% url 'register_step3_details' %}" class="btn-auth d-inline-block" style="text-decoration: none;">
+            <i class="fas fa-arrow-right me-2"></i>Complete Registration
+        </a>
+    </div>
+    
+    <div id="error-state" style="display: none;">
+        <div class="mb-4">
+            <i class="fas fa-times-circle" style="font-size: 80px; color: #dc3545;"></i>
+        </div>
+        <h3 class="fw-bold mb-3" style="color: #dc3545;">Verification Failed</h3>
+        <p class="text-muted mb-4" id="error-message">
+            The confirmation link is invalid or has expired.
+        </p>
+        <a href="{% url 'register_step1_email' %}" class="btn-auth d-inline-block" style="text-decoration: none;">
+            <i class="fas fa-redo me-2"></i>Start Over
+        </a>
+    </div>
+</div>
+
+<style>
+    .confirmation-container {
+        padding: 40px 0;
+        min-height: 300px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get hash parameters from URL (Supabase sends tokens in hash)
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    
+    // Also check query parameters
+    const queryParams = new URLSearchParams(window.location.search);
+    
+    // Try to get tokens from hash or query
+    const accessToken = params.get('access_token') || queryParams.get('access_token');
+    const refreshToken = params.get('refresh_token') || queryParams.get('refresh_token');
+    const tokenHash = params.get('token_hash') || queryParams.get('token_hash');
+    const type = params.get('type') || queryParams.get('type');
+    const error = params.get('error') || queryParams.get('error');
+    const errorDescription = params.get('error_description') || queryParams.get('error_description');
+    
+    // Check for errors first
+    if (error) {
+        showError(errorDescription || error);
+        return;
+    }
+    
+    // If we have an access token, the email is already confirmed
+    if (accessToken) {
+        // Send to backend to verify and set up session
+        verifyWithBackend(accessToken, refreshToken);
+    } else if (tokenHash) {
+        // Send token_hash to backend for verification
+        verifyTokenHash(tokenHash, type);
+    } else {
+        // No tokens found - check if we're already verified via session
+        checkSessionAndRedirect();
+    }
+    
+    function verifyWithBackend(token, refresh) {
+        fetch('{% url "auth_confirm_verify" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                access_token: token,
+                refresh_token: refresh
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccess();
+                // Auto-redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '{% url "register_step3_details" %}';
+                }, 2000);
+            } else {
+                showError(data.error || 'Verification failed');
+            }
+        })
+        .catch(err => {
+            console.error('Verification error:', err);
+            showError('Network error. Please try again.');
+        });
+    }
+    
+    function verifyTokenHash(hash, type) {
+        fetch('{% url "auth_confirm_verify" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                token_hash: hash,
+                type: type || 'signup'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccess();
+                setTimeout(() => {
+                    window.location.href = '{% url "register_step3_details" %}';
+                }, 2000);
+            } else {
+                showError(data.error || 'Verification failed');
+            }
+        })
+        .catch(err => {
+            console.error('Verification error:', err);
+            showError('Network error. Please try again.');
+        });
+    }
+    
+    function checkSessionAndRedirect() {
+        // If no tokens, redirect to step 3 in case session already verified
+        fetch('{% url "auth_confirm_verify" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ check_session: true })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.session_verified) {
+                showSuccess();
+                setTimeout(() => {
+                    window.location.href = '{% url "register_step3_details" %}';
+                }, 1000);
+            } else {
+                showError('No verification token found. Please use the link from your email.');
+            }
+        })
+        .catch(() => {
+            showError('Please use the confirmation link from your email.');
+        });
+    }
+    
+    function showSuccess() {
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('success-state').style.display = 'block';
+        document.getElementById('error-state').style.display = 'none';
+    }
+    
+    function showError(message) {
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('success-state').style.display = 'none';
+        document.getElementById('error-state').style.display = 'block';
+        document.getElementById('error-message').textContent = message;
+    }
+});
+</script>
+{% endblock %}

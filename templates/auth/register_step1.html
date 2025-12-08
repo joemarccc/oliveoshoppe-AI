@@ -40,15 +40,6 @@
         </small>
     </div>
 
-    <div class="form-group" style="margin-top: 20px;">
-        <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="terms_check" name="terms_check" required>
-            <label class="form-check-label" for="terms_check">
-                I agree to the <a href="#" id="termsLink" style="color: #2c5530; text-decoration: underline;">Terms & Conditions</a>
-            </label>
-        </div>
-    </div>
-
     <button type="submit" class="btn-auth w-100">
         <i class="fas fa-arrow-right me-2"></i>Send Confirmation Link
     </button>
@@ -61,8 +52,6 @@
         <p>Already registered? <a href="{% url 'login' %}">Login here</a></p>
     </div>
 </form>
-
-{% include 'auth/terms_modal.html' %}
 
 <style>
     .registration-progress {
@@ -126,29 +115,11 @@
 </style>
 
 <script>
-// Handle terms & conditions link
+// Form submission validation
 document.addEventListener('DOMContentLoaded', function() {
-    const termsLink = document.getElementById('termsLink');
-    const termsCheck = document.getElementById('terms_check');
-    
-    if (termsLink) {
-        termsLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            // Open the terms modal
-            const termsModal = new bootstrap.Modal(document.getElementById('termsModal'));
-            termsModal.show();
-        });
-    }
-    
-    // Form submission validation
     const form = document.querySelector('.needs-validation');
     form.addEventListener('submit', function(e) {
-        if (!termsCheck.checked) {
-            e.preventDefault();
-            e.stopPropagation();
-            alert('Please accept the Terms & Conditions to continue');
-            return false;
-        }
+        // HTML5 validation handles required email; no extra checks needed
     });
 });
 </script>

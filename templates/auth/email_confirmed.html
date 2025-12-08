@@ -1,0 +1,57 @@
+{% extends 'auth/base_auth.html' %}
+
+{% block title %}Email Confirmed{% endblock %}
+
+{% block auth_subtitle %}Your email has been verified{% endblock %}
+
+{% block auth_content %}
+<div class="confirmation-container text-center">
+    <div class="confirmation-icon mb-4">
+        <i class="fas fa-check-circle" style="font-size: 80px; color: #2c5530;"></i>
+    </div>
+    
+    <h3 class="fw-bold mb-3" style="color: #2c5530;">Email Confirmed!</h3>
+    
+    <p class="text-muted mb-4">
+        Your email address has been successfully verified. You can now complete your registration.
+    </p>
+    
+    <div class="alert alert-success" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        Click the button below to continue setting up your account.
+    </div>
+    
+    <a href="{% url 'register_step3_details' %}" class="btn-auth d-inline-block mt-3" style="text-decoration: none;">
+        <i class="fas fa-arrow-right me-2"></i>Continue to Registration
+    </a>
+    
+    <div class="auth-divider mt-4">
+        <span>Already have an account?</span>
+    </div>
+    
+    <div class="auth-footer">
+        <p>Already registered? <a href="{% url 'login' %}">Login here</a></p>
+    </div>
+</div>
+
+<style>
+    .confirmation-container {
+        padding: 20px 0;
+    }
+    
+    .confirmation-icon {
+        animation: scaleIn 0.5s ease-out;
+    }
+    
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+{% endblock %}

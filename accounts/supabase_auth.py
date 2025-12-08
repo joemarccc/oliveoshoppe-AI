@@ -95,39 +95,50 @@ def send_confirmation_email(email, redirect_url=None):
         }
 
 
-def verify_confirmation_token(token):
-    """
-    Verify confirmation token from email link
-    """
+def verify_confirmation_token(token: str = None, email: str = None):
+    """Verify confirmation token (magic link) from Supabase."""
     try:
         supabase_client = _require_supabase()
-        response = supabase_client.auth.verify_otp({
-            'token': token,
+
+        token_value = token
+        if not token_value:
+            return {
+                'success': False,
+                'error': 'Missing verification token'
+            }
+
+        payload = {
+            'token_hash': token_value,
             'type': 'signup'
-        })
-        
+        }
+
+        if email:
+            payload['email'] = email
+
+        response = supabase_client.auth.verify_otp(payload)
+
         if response.user:
-            logger.info(f"Email verified for user: {response.user.email}")
+            logger.info("Email verified for user: %s", response.user.email)
             return {
                 'success': True,
                 'user': response.user,
                 'message': 'Email verified successfully!'
             }
-        else:
-            return {
-                'success': False,
-                'error': 'Email verification failed'
-            }
-    
+
+        return {
+            'success': False,
+            'error': 'Email verification failed'
+        }
+
     except Exception as e:
         error_str = str(e)
-        logger.error(f"Email verification error: {error_str}")
-        
+        logger.error("Email verification error: %s", error_str)
+
         if 'invalid' in error_str.lower() or 'expired' in error_str.lower():
             error_msg = 'Verification link expired or invalid. Please sign up again.'
         else:
             error_msg = 'Email verification failed.'
-        
+
         return {
             'success': False,
             'error': error_msg
@@ -306,6 +317,40 @@ def verify_token(token):
             'success': False,
             'error': str(e)
         }
+
+
+def verify_access_token(access_token):
+    """
+    Verify an access token from Supabase redirect
+    Used for email confirmation callbacks
+    """
+    try:
+        supabase_client = _require_supabase()
+        
+        # Use the access token to get user info
+        response = supabase_client.auth.get_user(access_token)
+        
+        if response and response.user:
+            logger.info(f"Access token verified for user: {response.user.email}")
+            return {
+                'success': True,
+                'user': response.user,
+                'message': 'Token verified successfully'
+            }
+        else:
+            return {
+                'success': False,
+                'error': 'Invalid access token'
+            }
+    
+    except Exception as e:
+        error_str = str(e)
+        logger.error(f"Access token verification failed: {error_str}")
+        return {
+            'success': False,
+            'error': error_str
+        }
+
 
 # ============================================
 # LOGOUT

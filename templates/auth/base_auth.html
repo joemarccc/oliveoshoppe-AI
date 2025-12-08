@@ -443,9 +443,10 @@
         const termsCheck = document.getElementById('terms_check');
         const termsCheckLogin = document.getElementById('terms_check_login');
 
-        if (registerForm) {
+        // Enforce terms only when a page explicitly provides the checkbox
+        if (registerForm && termsCheck) {
             registerForm.addEventListener('submit', function(e) {
-                if (!termsCheck || !termsCheck.checked) {
+                if (!termsCheck.checked) {
                     e.preventDefault();
                     alert('Please accept the Terms & Conditions to continue');
                     return false;
@@ -453,9 +454,9 @@
             });
         }
 
-        if (loginForm) {
+        if (loginForm && termsCheckLogin) {
             loginForm.addEventListener('submit', function(e) {
-                if (!termsCheckLogin || !termsCheckLogin.checked) {
+                if (!termsCheckLogin.checked) {
                     e.preventDefault();
                     alert('Please accept the Terms & Conditions to continue');
                     return false;

@@ -3,55 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Olive Oshoppe - Home</title>
+    <title>Olive Oshoppe - Your Plant Care Companion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --olive-dark: #2c5530;
+            --olive-medium: #3d7a44;
+            --olive-light: #4e9f50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-medium) 50%, var(--olive-light) 100%);
             min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--olive-dark) !important;
+            font-size: 1.5rem;
+        }
+        
+        .navbar-brand i {
+            color: var(--olive-medium);
+        }
+        
+        .nav-link {
+            color: #333 !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: var(--olive-medium) !important;
+        }
+        
+        .btn-nav {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .btn-login {
+            background: transparent;
+            border: 2px solid var(--olive-dark);
+            color: var(--olive-dark);
+        }
+        
+        .btn-login:hover {
+            background: var(--olive-dark);
+            color: white;
+        }
+        
+        .btn-register {
+            background: var(--olive-dark);
+            border: 2px solid var(--olive-dark);
+            color: white;
+        }
+        
+        .btn-register:hover {
+            background: var(--olive-medium);
+            border-color: var(--olive-medium);
+        }
+        
+        .hero-section {
+            min-height: calc(100vh - 80px);
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        .container {
             text-align: center;
             color: white;
+            padding: 40px 20px;
         }
-        h1 {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
+        
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
+        
+        .hero-content p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
         }
-        .btn-group-vertical {
-            gap: 1rem;
+        
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        .btn {
+        
+        .btn-hero {
+            padding: 15px 40px;
             font-size: 1.1rem;
-            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-hero-primary {
+            background: white;
+            color: var(--olive-dark);
+            border: none;
+        }
+        
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            color: var(--olive-dark);
+        }
+        
+        .btn-hero-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-hero-secondary:hover {
+            background: white;
+            color: var(--olive-dark);
+            transform: translateY(-3px);
+        }
+        
+        .features-section {
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--olive-medium);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h4 {
+            color: var(--olive-dark);
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .user-welcome {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-content p {
+                font-size: 1.1rem;
+            }
+            
+            .btn-hero {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🌿 Olive Oshoppe</h1>
-        <p>Welcome to Olive Oshoppe AI - Your Plant Care Companion</p>
-        
-        <div class="btn-group-vertical">
-            {% if user.is_authenticated %}
-                <p>Welcome back, <strong>{{ user.username }}</strong>!</p>
-                <a href="/admin/" class="btn btn-light">Admin Dashboard</a>
-                <a href="/accounts/logout/" class="btn btn-outline-light">Logout</a>
-            {% else %}
-                <a href="/accounts/register/" class="btn btn-light">Get Started</a>
-                <a href="/accounts/login/" class="btn btn-outline-light">Login</a>
-            {% endif %}
-            <a href="/chatbot/" class="btn btn-info">Chat with AI</a>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-leaf me-2"></i>OliveOshoppe
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chatbot/">AI Chat</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <span class="nav-link">Welcome, <strong>{{ user.username }}</strong></span>
+                        <a href="/accounts/profile/" class="btn btn-nav btn-login">Profile</a>
+                        <a href="/accounts/logout/" class="btn btn-nav btn-register">Logout</a>
+                    {% else %}
+                        <a href="/accounts/login/" class="btn btn-nav btn-login">Login</a>
+                        <a href="/accounts/register/" class="btn btn-nav btn-register">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            {% if user.is_authenticated %}
+                <div class="user-welcome">
+                    <h2 style="color: var(--olive-dark);">Welcome back, {{ user.username }}! 🌿</h2>
+                    <p style="color: #666; margin-bottom: 0;">Ready to care for your plants today?</p>
+                </div>
+            {% endif %}
+            
+            <h1>🌿 Olive Oshoppe</h1>
+            <p>Your AI-Powered Plant Care Companion</p>
+            
+            <div class="hero-buttons">
+                {% if user.is_authenticated %}
+                    <a href="/chatbot/" class="btn btn-hero btn-hero-primary">
+                        <i class="fas fa-robot me-2"></i>Chat with AI
+                    </a>
+                    <a href="/accounts/profile/" class="btn btn-hero btn-hero-secondary">
+                        <i class="fas fa-user me-2"></i>My Profile
+                    </a>
+                {% else %}
+                    <a href="/accounts/register/" class="btn btn-hero btn-hero-primary">
+                        <i class="fas fa-user-plus me-2"></i>Get Started
+                    </a>
+                    <a href="/accounts/login/" class="btn btn-hero btn-hero-secondary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h4>AI Plant Assistant</h4>
+                        <p>Get instant advice on plant care, disease diagnosis, and growing tips from our intelligent chatbot.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <h4>Plant Care Guides</h4>
+                        <p>Access comprehensive care guides for hundreds of plant species, tailored to your environment.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h4>Plant Shop</h4>
+                        <p>Browse and purchase beautiful, healthy plants delivered right to your doorstep.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

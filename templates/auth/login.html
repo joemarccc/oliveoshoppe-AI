@@ -5,16 +5,6 @@
 {% block auth_subtitle %}Welcome back! Please login to your account.{% endblock %}
 
 {% block auth_content %}
-<div class="landing-hero mb-4">
-    <div class="landing-icon">🌿</div>
-    <h2 class="landing-title">Olive Oshoppe AI</h2>
-    <p class="landing-tagline">Your plant care companion with quick login access.</p>
-    <div class="landing-actions">
-        <a href="{% url 'register' %}" class="btn btn-success">Get Started</a>
-        <a href="/chatbot/" class="btn btn-outline-success">Chat with AI</a>
-    </div>
-</div>
-
 <form method="post" id="loginForm" class="needs-validation" novalidate>
     {% csrf_token %}
     
@@ -24,7 +14,7 @@
         </label>
         <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
                id="username" name="username" placeholder="Enter your username or email"
-               value="{{ form.username.value|default:'' }}" required>
+               value="{{ form.username.value|default:'' }}" required autofocus>
         {% if form.username.errors %}
             <div class="invalid-feedback d-block">
                 <i class="fas fa-exclamation-circle me-1"></i>{{ form.username.errors|join:", " }}
@@ -55,49 +45,11 @@
 
     <div class="auth-footer">
         <p>Don't have an account? <a href="{% url 'register' %}">Create one now</a></p>
-        <p style="font-size: 12px; margin-top: 10px;"><a href="#" style="color: #999;">Forgot password?</a></p>
+        <p style="font-size: 12px; margin-top: 10px;">
+            <a href="{% url 'password_reset' %}" style="color: #999;">Forgot password?</a>
+        </p>
     </div>
-    </form>
-
-<style>
-    .landing-hero {
-        background: linear-gradient(135deg, #f4f8f5 0%, #e9f3ec 100%);
-        border: 1px solid #e0e6e2;
-        border-radius: 14px;
-        padding: 18px 16px;
-        text-align: center;
-    }
-
-    .landing-icon {
-        font-size: 28px;
-        margin-bottom: 6px;
-    }
-
-    .landing-title {
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 6px;
-        color: #2c5530;
-    }
-
-    .landing-tagline {
-        font-size: 14px;
-        color: #4a5a4e;
-        margin-bottom: 14px;
-    }
-
-    .landing-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .landing-actions .btn {
-        min-width: 140px;
-        font-weight: 600;
-    }
-</style>
+</form>
 
 <script>
 // Form validation
