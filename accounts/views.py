@@ -63,8 +63,8 @@ def register_step2_email_check(request):
     if not email:
         messages.error(request, 'Please start from the beginning.')
         return redirect('register_step1_email')
-
-    # If already verified, skip this step and continue to step 3
+    
+    # If already verified, redirect to step 3
     if request.session.get('email_verified'):
         return redirect('register_step3_details')
     
@@ -78,6 +78,17 @@ def register_step2_email_check(request):
     
     debug = config('DEBUG', default=False, cast=bool)
     return render(request, 'auth/register_step2_email_check.html', {'email': email, 'debug': debug})
+
+
+@require_http_methods(["GET"])
+def check_email_verification(request):
+    """API endpoint to check if email has been verified (for polling from step 2)"""
+    if request.session.get('email_verified'):
+        return JsonResponse({
+            'verified': True,
+            'redirect_url': '/accounts/register/step3/'
+        })
+    return JsonResponse({'verified': False})
 
 
 def register_callback(request):
@@ -104,7 +115,7 @@ def register_callback(request):
         # Store verified state in session
         request.session['registration_email'] = user_email
         request.session['email_verified'] = True
-        request.session['registration_step'] = 3
+        request.session['registration_step'] = 2
         
         # Auto-redirect to Step 3
         return redirect('register_step3_details')
@@ -332,7 +343,7 @@ def auth_confirm_verify(request):
             if user_email:
                 request.session['registration_email'] = user_email
             request.session['email_verified'] = True
-            request.session['registration_step'] = 3
+            request.session['registration_step'] = 2
             
             return JsonResponse({
                 'success': True,
@@ -353,7 +364,7 @@ def auth_confirm_verify(request):
             if user_email:
                 request.session['registration_email'] = user_email
             request.session['email_verified'] = True
-            request.session['registration_step'] = 3
+            request.session['registration_step'] = 2
             
             return JsonResponse({
                 'success': True,

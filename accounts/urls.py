@@ -10,6 +10,7 @@ urlpatterns = [
     path('register/step3/', views.register_step3_details, name='register_step3_details'),
     path('register/callback/', views.register_callback, name='register_callback'),
     path('register/resend-otp/', views.resend_otp, name='resend_otp'),
+    path('register/check-verification/', views.check_email_verification, name='check_email_verification'),
     path('login/', views.login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('password_reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset.html'), name='password_reset'),

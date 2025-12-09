@@ -18,13 +18,14 @@
         <div class="mb-4">
             <i class="fas fa-check-circle" style="font-size: 80px; color: #2c5530;"></i>
         </div>
-        <h3 class="fw-bold mb-3" style="color: #2c5530;">Email verified.</h3>
-        <p class="text-muted mb-4" id="success-message">
-            Email verified. You may close this tab and return to the previous one.
+        <h3 class="fw-bold mb-3" style="color: #2c5530;">Email Verified!</h3>
+        <p class="text-muted mb-4">
+            Your email address has been successfully verified.<br>
+            <strong>You may close this tab and return to the previous one.</strong>
         </p>
-        <a href="{% url 'register_step3_details' %}" class="btn-auth d-inline-block" style="text-decoration: none;">
-            <i class="fas fa-arrow-right me-2"></i>Go to Step 3
-        </a>
+        <p class="text-muted small">
+            The registration page will automatically proceed to Step 3.
+        </p>
     </div>
     
     <div id="error-state" style="display: none;">
@@ -99,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 showSuccess();
+                // DO NOT redirect - user should close this tab and return to original
             } else {
                 showError(data.error || 'Verification failed');
             }
@@ -125,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 showSuccess();
+                // DO NOT redirect - user should close this tab and return to original
             } else {
                 showError(data.error || 'Verification failed');
             }
@@ -136,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function checkSessionAndRedirect() {
-        // If no tokens, redirect to step 3 in case session already verified
+        // If no tokens, just show success if session is already verified
         fetch('{% url "auth_confirm_verify" %}', {
             method: 'POST',
             headers: {
@@ -149,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success && data.session_verified) {
                 showSuccess();
+                // Already verified, just show success message
             } else {
                 showError('No verification token found. Please use the link from your email.');
             }

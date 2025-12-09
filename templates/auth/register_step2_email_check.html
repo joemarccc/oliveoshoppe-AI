@@ -195,6 +195,44 @@
 
 <script>
 let resendCount = 0;
+let pollInterval;
+
+// Start polling for email verification status
+function startPolling() {
+    pollInterval = setInterval(checkVerificationStatus, 3000); // Check every 3 seconds
+}
+
+function checkVerificationStatus() {
+    fetch('{% url "check_email_verification" %}')
+    .then(response => response.json())
+    .then(data => {
+        if (data.verified) {
+            clearInterval(pollInterval);
+            // Show success message briefly before redirect
+            const wrapper = document.querySelector('.email-icon-wrapper');
+            wrapper.innerHTML = '<i class="fas fa-check"></i>';
+            wrapper.style.background = 'linear-gradient(135deg, #28a745 0%, #218838 100%)';
+            
+            const heading = document.querySelector('.email-verification-section h3');
+            heading.textContent = 'Email Verified!';
+            heading.style.color = '#28a745';
+            
+            const subtext = document.querySelector('.email-verification-section > div:first-child > p');
+            subtext.textContent = 'Redirecting to complete your registration...';
+            
+            // Redirect to step 3
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
+        }
+    })
+    .catch(err => {
+        console.log('Polling check failed:', err);
+    });
+}
+
+// Start polling when page loads
+document.addEventListener('DOMContentLoaded', startPolling);
 
 function resendEmail() {
     if (resendCount >= 3) {

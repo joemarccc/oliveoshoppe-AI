@@ -22,7 +22,9 @@ class LoginRequiredForActionsMiddleware:
     
     # Paths that don't require authentication (can be viewed by anyone)
     PUBLIC_PATHS = [
-        r'^/$',                          # Homepage
+        r'^/$',                          # Homepage / Shop
+        r'^/shop/',                      # Shop page
+        r'^/api/$',                      # API shop home
         r'^/accounts/login/',            # Login page
         r'^/accounts/register/',         # Registration pages
         r'^/accounts/password_reset/',   # Password reset
@@ -31,19 +33,23 @@ class LoginRequiredForActionsMiddleware:
         r'^/media/',                     # Media files
         r'^/admin/login/',               # Admin login
         r'^/chatbot/',                   # Chatbot (optional - remove if needs auth)
+        r'^/plants/$',                   # Plant list view (read-only)
+        r'^/plants/\d+/$',               # Plant detail view (read-only)
     ]
     
-    # Paths that require authentication
+    # Paths that require authentication (actions, not viewing)
     PROTECTED_PATHS = [
         r'^/cart/',                      # Cart
         r'^/checkout/',                  # Checkout
-        r'^/products/\d+/',              # Product details
-        r'^/add-to-cart/',               # Add to cart action
+        r'^/cart/add/',                  # Add to cart action
         r'^/wishlist/',                  # Wishlist
         r'^/orders/',                    # Orders
         r'^/accounts/profile/',          # Profile
         r'^/accounts/dashboard/',        # Dashboard
         r'^/api/protected/',             # Protected API
+        r'^/plants/create/',             # Create plant (admin)
+        r'^/plants/\d+/edit/',           # Edit plant (admin)
+        r'^/plants/\d+/delete/',         # Delete plant (admin)
     ]
     
     def __init__(self, get_response):

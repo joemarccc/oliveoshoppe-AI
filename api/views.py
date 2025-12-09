@@ -11,7 +11,6 @@ from django.contrib import messages
 from django.conf import settings
 from .rate_limiter import rate_limit
 from django.db.models import Count, Sum
-from django.db.utils import OperationalError
 from django.utils import timezone
 from datetime import timedelta
 from .models import Order, OrderItem, UserProfile, Review, Wishlist, Plant, Cart, CartItem, Notification
@@ -512,36 +511,33 @@ def logout_view(request):
     return redirect('login')
 
 def shop_view(request):
+    """Public shop view - anyone can browse plants without login"""
     query = request.GET.get('q', '')
     sort = request.GET.get('sort', 'name')
     
-    try:
-        plants = Plant.objects.filter(stock__gt=0)
-        
-        # Filter by search query
-        if query:
-            plants = plants.filter(
-                Q(name__icontains=query) | 
-                Q(description__icontains=query)
-            )
-        
-        # Sort results
-        if sort == 'price_asc':
-            plants = plants.order_by('price')
-        elif sort == 'price_desc':
-            plants = plants.order_by('-price')
-        elif sort == 'name_desc':
-            plants = plants.order_by('-name')
-        else:  # default to name ascending
-            plants = plants.order_by('name')
-        
-        # Pagination
-        paginator = Paginator(plants, 12)  # Show 12 plants per page
-        page = request.GET.get('page')
-        plants = paginator.get_page(page)
-    except (OperationalError, Exception):
-        # Gracefully handle missing migrations/DB issues in production
-        plants = []
+    plants = Plant.objects.filter(stock__gt=0)
+    
+    # Filter by search query
+    if query:
+        plants = plants.filter(
+            Q(name__icontains=query) | 
+            Q(description__icontains=query)
+        )
+    
+    # Sort results
+    if sort == 'price_asc':
+        plants = plants.order_by('price')
+    elif sort == 'price_desc':
+        plants = plants.order_by('-price')
+    elif sort == 'name_desc':
+        plants = plants.order_by('-name')
+    else:  # default to name ascending
+        plants = plants.order_by('name')
+    
+    # Pagination
+    paginator = Paginator(plants, 12)  # Show 12 plants per page
+    page = request.GET.get('page')
+    plants = paginator.get_page(page)
     
     context = {
         'plants': plants,
@@ -648,12 +644,9 @@ def plant_delete(request, plant_id):
     
     return render(request, 'admin/plant_confirm_delete.html', {'plant': plant})
 
+@login_required
 def plant_detail(request, plant_id):
-    try:
-        plant = get_object_or_404(Plant, id=plant_id)
-    except OperationalError:
-        messages.error(request, 'Products are temporarily unavailable. Please try again later.')
-        return redirect('home')
+    plant = get_object_or_404(Plant, id=plant_id)
     if not request.user.is_staff and plant.stock <= 0:
         raise Http404("Plant not available")
     
