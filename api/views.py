@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.conf import settings
 from .rate_limiter import rate_limit
 from django.db.models import Count, Sum
+from django.db.utils import OperationalError
 from django.utils import timezone
 from datetime import timedelta
 from .models import Order, OrderItem, UserProfile, Review, Wishlist, Plant, Cart, CartItem, Notification
@@ -514,7 +515,11 @@ def shop_view(request):
     query = request.GET.get('q', '')
     sort = request.GET.get('sort', 'name')
     
-    plants = Plant.objects.filter(stock__gt=0)
+    try:
+        plants = Plant.objects.filter(stock__gt=0)
+    except OperationalError:
+        # Gracefully handle missing migrations/DB issues in production to avoid 500s
+        plants = Plant.objects.none()
     
     # Filter by search query
     if query:
@@ -644,7 +649,11 @@ def plant_delete(request, plant_id):
     return render(request, 'admin/plant_confirm_delete.html', {'plant': plant})
 
 def plant_detail(request, plant_id):
-    plant = get_object_or_404(Plant, id=plant_id)
+    try:
+        plant = get_object_or_404(Plant, id=plant_id)
+    except OperationalError:
+        messages.error(request, 'Products are temporarily unavailable. Please try again later.')
+        return redirect('home')
     if not request.user.is_staff and plant.stock <= 0:
         raise Http404("Plant not available")
     
