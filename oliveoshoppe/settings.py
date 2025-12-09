@@ -58,7 +58,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'wsgi.application'
+WSGI_APPLICATION = 'oliveoshoppe.wsgi.application'
 
 DATABASES = {
     'default': {
