@@ -4,8 +4,8 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn wsgi:application
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput
+    startCommand: gunicorn oliveoshoppe.wsgi:application
     envVars:
       - key: SECRET_KEY
         scope: runtime
@@ -21,3 +21,5 @@ services:
         scope: runtime
       - key: PYTHON_VERSION
         value: "3.12"
+      - key: DJANGO_SETTINGS_MODULE
+        value: "oliveoshoppe.settings"
