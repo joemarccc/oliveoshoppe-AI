@@ -510,7 +510,6 @@ def logout_view(request):
     messages.success(request, 'Successfully logged out!')
     return redirect('login')
 
-@login_required
 def shop_view(request):
     query = request.GET.get('q', '')
     sort = request.GET.get('sort', 'name')
@@ -644,7 +643,6 @@ def plant_delete(request, plant_id):
     
     return render(request, 'admin/plant_confirm_delete.html', {'plant': plant})
 
-@login_required
 def plant_detail(request, plant_id):
     plant = get_object_or_404(Plant, id=plant_id)
     if not request.user.is_staff and plant.stock <= 0:

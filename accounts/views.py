@@ -63,6 +63,10 @@ def register_step2_email_check(request):
     if not email:
         messages.error(request, 'Please start from the beginning.')
         return redirect('register_step1_email')
+
+    # If already verified, skip this step and continue to step 3
+    if request.session.get('email_verified'):
+        return redirect('register_step3_details')
     
     # Development mode: Allow skipping email verification
     if request.method == 'POST' and request.POST.get('skip_email'):
@@ -100,7 +104,7 @@ def register_callback(request):
         # Store verified state in session
         request.session['registration_email'] = user_email
         request.session['email_verified'] = True
-        request.session['registration_step'] = 2
+        request.session['registration_step'] = 3
         
         # Auto-redirect to Step 3
         return redirect('register_step3_details')
@@ -328,7 +332,7 @@ def auth_confirm_verify(request):
             if user_email:
                 request.session['registration_email'] = user_email
             request.session['email_verified'] = True
-            request.session['registration_step'] = 2
+            request.session['registration_step'] = 3
             
             return JsonResponse({
                 'success': True,
@@ -349,7 +353,7 @@ def auth_confirm_verify(request):
             if user_email:
                 request.session['registration_email'] = user_email
             request.session['email_verified'] = True
-            request.session['registration_step'] = 2
+            request.session['registration_step'] = 3
             
             return JsonResponse({
                 'success': True,
