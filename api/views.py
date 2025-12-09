@@ -517,31 +517,31 @@ def shop_view(request):
     
     try:
         plants = Plant.objects.filter(stock__gt=0)
-    except OperationalError:
-        # Gracefully handle missing migrations/DB issues in production to avoid 500s
-        plants = Plant.objects.none()
-    
-    # Filter by search query
-    if query:
-        plants = plants.filter(
-            Q(name__icontains=query) | 
-            Q(description__icontains=query)
-        )
-    
-    # Sort results
-    if sort == 'price_asc':
-        plants = plants.order_by('price')
-    elif sort == 'price_desc':
-        plants = plants.order_by('-price')
-    elif sort == 'name_desc':
-        plants = plants.order_by('-name')
-    else:  # default to name ascending
-        plants = plants.order_by('name')
-    
-    # Pagination
-    paginator = Paginator(plants, 12)  # Show 12 plants per page
-    page = request.GET.get('page')
-    plants = paginator.get_page(page)
+        
+        # Filter by search query
+        if query:
+            plants = plants.filter(
+                Q(name__icontains=query) | 
+                Q(description__icontains=query)
+            )
+        
+        # Sort results
+        if sort == 'price_asc':
+            plants = plants.order_by('price')
+        elif sort == 'price_desc':
+            plants = plants.order_by('-price')
+        elif sort == 'name_desc':
+            plants = plants.order_by('-name')
+        else:  # default to name ascending
+            plants = plants.order_by('name')
+        
+        # Pagination
+        paginator = Paginator(plants, 12)  # Show 12 plants per page
+        page = request.GET.get('page')
+        plants = paginator.get_page(page)
+    except (OperationalError, Exception):
+        # Gracefully handle missing migrations/DB issues in production
+        plants = []
     
     context = {
         'plants': plants,
