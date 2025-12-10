@@ -4,7 +4,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
     startCommand: gunicorn wsgi:application
     envVars:
       - key: SECRET_KEY
@@ -12,6 +12,8 @@ services:
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
+        scope: runtime
+      - key: DATABASE_URL
         scope: runtime
       - key: SUPABASE_URL
         scope: runtime

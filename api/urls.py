@@ -8,8 +8,8 @@ urlpatterns = [
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     
-    # Shop URLs
-    path('', views.shop_view, name='home'),  # Make shop the home page
+    # Shop URLs (note: main home is at root /, this is /api/)
+    path('', views.shop_view, name='api_shop'),  # This is /api/ not /
     path('shop/', views.shop_view, name='shop'),
     path('plants/', views.plant_list, name='plant_list'),
     path('plants/create/', views.plant_create, name='plant_create'),
