@@ -553,14 +553,17 @@ def shop_view(request):
         logger = logging.getLogger(__name__)
         logger.error(f"Shop view error: {str(e)}")
         
-        # Return empty shop page with error message
+        # Return empty shop page with error message but 200 status
+        from django.http import HttpResponse
         context = {
             'plants': [],
             'query': '',
             'sort': 'name',
-            'error_message': 'Unable to load products. Please try again later.'
+            'error_message': 'Our shop is being set up. Please check back soon!'
         }
-        return render(request, 'shop.html', context)
+        response = render(request, 'shop.html', context)
+        response.status_code = 200
+        return response
 
 @login_required
 def plant_list(request):
