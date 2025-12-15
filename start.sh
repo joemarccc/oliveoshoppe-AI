@@ -8,5 +8,8 @@ python --version
 echo "=== Running Database Migrations ==="
 python manage.py migrate --noinput || echo "Migrations failed, continuing..."
 
+echo "=== Creating Admin User ==="
+python manage.py create_admin
+
 echo "=== Starting Gunicorn ==="
 exec gunicorn oliveoshoppe.wsgi:application --bind 0.0.0.0:10000
