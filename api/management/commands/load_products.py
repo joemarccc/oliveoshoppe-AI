@@ -167,13 +167,13 @@ class Command(BaseCommand):
         updated = 0
 
         for product_data in products:
+            # Don't include image in initial load (images can be uploaded via admin later)
             plant, created_new = Plant.objects.update_or_create(
                 name=product_data['name'],
                 defaults={
                     'description': product_data['description'],
                     'price': product_data['price'],
                     'stock': product_data['stock'],
-                    'image': product_data['image']
                 }
             )
             if created_new:

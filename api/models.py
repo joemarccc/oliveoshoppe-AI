@@ -98,20 +98,27 @@ class Plant(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        # Only process image if it exists on disk
         if self.image:
-            img = Image.open(self.image.path)
-            # Crop to square if needed
-            if img.height != img.width:
-                side = min(img.height, img.width)
-                left = (img.width - side) // 2
-                top = (img.height - side) // 2
-                right = left + side
-                bottom = top + side
-                img = img.crop((left, top, right, bottom))
-            # Resize if too large
-            if img.height > 800 or img.width > 800:
-                img.thumbnail((800, 800))
-            img.save(self.image.path, quality=85, optimize=True)
+            try:
+                import os
+                if os.path.exists(self.image.path):
+                    img = Image.open(self.image.path)
+                    # Crop to square if needed
+                    if img.height != img.width:
+                        side = min(img.height, img.width)
+                        left = (img.width - side) // 2
+                        top = (img.height - side) // 2
+                        right = left + side
+                        bottom = top + side
+                        img = img.crop((left, top, right, bottom))
+                    # Resize if too large
+                    if img.height > 800 or img.width > 800:
+                        img.thumbnail((800, 800))
+                    img.save(self.image.path, quality=85, optimize=True)
+            except (FileNotFoundError, IOError):
+                # Image file doesn't exist, skip processing
+                pass
 
 class Order(models.Model):
     STATUS_CHOICES = [
