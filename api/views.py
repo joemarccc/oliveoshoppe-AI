@@ -655,14 +655,36 @@ def plant_edit(request, plant_id):
         plant.price = request.POST.get('price')
         plant.stock = request.POST.get('stock')
         image_url = request.POST.get('image_url', '').strip()
+        delete_image = request.POST.get('delete_image') == '1'
 
+        # Handle image deletion
+        if delete_image:
+            if plant.image:
+                try:
+                    plant.image.delete(save=False)
+                except Exception:
+                    pass
+                plant.image = None
+            plant.image_url = None
+        
+        # Handle new image upload
         if 'image' in request.FILES:
+            if plant.image:
+                try:
+                    plant.image.delete(save=False)
+                except Exception:
+                    pass
             plant.image = request.FILES['image']
             plant.image_url = None
-        elif image_url:
+        elif image_url and not delete_image:
             plant.image_url = image_url
-            # Optional: keep existing image file; clearing avoids conflicts when URL is primary
-            plant.image = None
+            # Clear file when URL is provided
+            if plant.image:
+                try:
+                    plant.image.delete(save=False)
+                except Exception:
+                    pass
+                plant.image = None
         
         plant.save()
         messages.success(request, 'Plant updated successfully!')
