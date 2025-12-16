@@ -617,13 +617,26 @@ def plant_create(request):
         price = request.POST.get('price')
         stock = request.POST.get('stock')
         image = request.FILES.get('image')
+        image_url = request.POST.get('image_url', '').strip()
+
+        if not image and not image_url:
+            messages.error(request, 'Please upload an image file or provide an image URL.')
+            return render(request, 'admin/plant_form.html', {
+                'plant': None,
+                'name': name,
+                'description': description,
+                'price': price,
+                'stock': stock,
+                'image_url': image_url,
+            })
         
         plant = Plant.objects.create(
             name=name,
             description=description,
             price=price,
             stock=stock,
-            image=image
+            image=image if image else None,
+            image_url=image_url or None,
         )
         
         messages.success(request, 'Plant created successfully!')
@@ -641,9 +654,15 @@ def plant_edit(request, plant_id):
         plant.description = request.POST.get('description')
         plant.price = request.POST.get('price')
         plant.stock = request.POST.get('stock')
-        
+        image_url = request.POST.get('image_url', '').strip()
+
         if 'image' in request.FILES:
             plant.image = request.FILES['image']
+            plant.image_url = None
+        elif image_url:
+            plant.image_url = image_url
+            # Optional: keep existing image file; clearing avoids conflicts when URL is primary
+            plant.image = None
         
         plant.save()
         messages.success(request, 'Plant updated successfully!')

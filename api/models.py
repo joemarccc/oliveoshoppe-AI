@@ -81,6 +81,7 @@ class Plant(models.Model):
         validators=[MinValueValidator(0.01)]
     )
     stock = models.PositiveIntegerField(default=0)
+    image_url = models.URLField(blank=True, null=True)
     image = models.ImageField(
         upload_to='plants/',
         validators=[validate_image],
@@ -119,6 +120,17 @@ class Plant(models.Model):
             except (FileNotFoundError, IOError):
                 # Image file doesn't exist, skip processing
                 pass
+
+    @property
+    def image_src(self):
+        """Return a usable image URL from file or stored URL."""
+        if self.image:
+            try:
+                return self.image.url
+            except ValueError:
+                # Storage backend may raise if file missing
+                pass
+        return self.image_url or ''
 
 class Order(models.Model):
     STATUS_CHOICES = [

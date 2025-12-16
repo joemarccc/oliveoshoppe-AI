@@ -55,10 +55,21 @@
                                     <img src="{{ plant.image.url }}" alt="{{ plant.name }}" 
                                          class="img-thumbnail" style="max-height: 200px;">
                                 </div>
+                            {% elif plant.image_url %}
+                                <div class="mb-2">
+                                    <img src="{{ plant.image_url }}" alt="{{ plant.name }}" 
+                                         class="img-thumbnail" style="max-height: 200px;">
+                                </div>
                             {% endif %}
                             <input type="file" class="form-control" id="image" name="image" 
-                                   accept="image/*" {% if not plant %}required{% endif %}>
-                            <small class="text-muted">Upload a clear image of the plant (JPEG, PNG, or WebP, max 2MB)</small>
+                                   accept="image/*">
+                            <small class="text-muted d-block mb-2">Upload a clear image of the plant (JPEG, PNG, or WebP, max 2MB)</small>
+
+                            <label for="image_url" class="form-label mt-3">or Image URL</label>
+                            <input type="url" class="form-control" id="image_url" name="image_url"
+                                   placeholder="https://example.com/your-image.jpg"
+                                   value="{{ plant.image_url|default:image_url|default:'' }}">
+                            <small class="text-muted">Paste a direct image link (we will use this if no file is uploaded)</small>
                         </div>
 
                         <div class="d-grid gap-2">

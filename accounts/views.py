@@ -246,19 +246,7 @@ def login_view(request):
         # Try to login with Supabase using email or username
         from .supabase_auth import login_with_supabase
         
-        # First try as email
         supabase_result = login_with_supabase(username, password)
-        
-        # If failed and username doesn't look like email, try to find user by username
-        if not supabase_result['success'] and '@' not in username:
-            try:
-                user = authenticate(request, username=username, password=password)
-                if user:
-                    login(request, user)
-                    messages.success(request, f'Welcome back!')
-                    return redirect('home')
-            except:
-                pass
         
         if supabase_result['success']:
             # Store Supabase token in session
@@ -270,13 +258,34 @@ def login_view(request):
                 django_user = authenticate(request, username=username, password=password)
                 if django_user:
                     login(request, django_user)
-            except:
-                pass
+            except Exception as exc:
+                logger.warning("Django login sync failed after Supabase login: %s", exc)
             
             messages.success(request, 'Welcome back!')
             return redirect('home')
-        else:
-            messages.error(request, 'Invalid email/username or password')
+        
+        # Supabase login failed; fall back to Django auth (supports email or username)
+        django_lookup = username
+        if '@' in username:
+            from django.contrib.auth import get_user_model
+            try:
+                user_model = get_user_model()
+                user_obj = user_model.objects.filter(email__iexact=username).first()
+                if user_obj:
+                    django_lookup = user_obj.username
+            except Exception as exc:
+                logger.warning("Django email lookup failed during login: %s", exc)
+        
+        try:
+            user = authenticate(request, username=django_lookup, password=password)
+            if user:
+                login(request, user)
+                messages.success(request, 'Welcome back!')
+                return redirect('home')
+        except Exception as exc:
+            logger.warning("Django auth fallback failed: %s", exc)
+        
+        messages.error(request, 'Invalid email/username or password')
     
     return render(request, 'auth/login.html')
 

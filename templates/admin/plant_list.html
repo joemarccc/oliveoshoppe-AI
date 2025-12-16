@@ -66,11 +66,16 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    {% if plant.image %}
+                                     {% if plant.image %}
                                     <div class="me-3">
                                         <img class="rounded-circle" src="{{ plant.image.url }}" alt="{{ plant.name }}" 
                                              style="width: 40px; height: 40px; object-fit: cover;">
                                     </div>
+                                     {% elif plant.image_url %}
+                                     <div class="me-3">
+                                        <img class="rounded-circle" src="{{ plant.image_url }}" alt="{{ plant.name }}" 
+                                            style="width: 40px; height: 40px; object-fit: cover;">
+                                     </div>
                                     {% else %}
                                     <div class="me-3 bg-light rounded-circle d-flex align-items-center justify-content-center"
                                          style="width: 40px; height: 40px;">

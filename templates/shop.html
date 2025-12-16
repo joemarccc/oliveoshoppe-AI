@@ -39,6 +39,9 @@
                 {% if plant.image %}
                     <img src="{{ plant.image.url }}" class="card-img-top" alt="{{ plant.name }}"
                          style="height: 200px; object-fit: cover;">
+                {% elif plant.image_url %}
+                    <img src="{{ plant.image_url }}" class="card-img-top" alt="{{ plant.name }}"
+                         style="height: 200px; object-fit: cover;">
                 {% else %}
                     <div class="bg-light d-flex align-items-center justify-content-center" 
                          style="height: 200px;">
