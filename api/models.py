@@ -82,11 +82,12 @@ class Plant(models.Model):
     )
     stock = models.PositiveIntegerField(default=0)
     image_url = models.URLField(blank=True, null=True)
+    # Legacy field - no longer used, kept for migration compatibility
     image = models.ImageField(
         upload_to='plants/',
-        validators=[validate_image],
         null=True,
-        blank=True
+        blank=True,
+        editable=False  # Hide from forms
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

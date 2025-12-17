@@ -656,7 +656,16 @@ def plant_create(request):
 
 @user_passes_test(is_admin)
 def plant_edit(request, plant_id):
-    plant = get_object_or_404(Plant, id=plant_id)
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        plant = get_object_or_404(Plant, id=plant_id)
+        logger.info(f"Loading plant {plant_id} for edit: {plant.name}")
+    except Exception as e:
+        logger.error(f"Error getting plant {plant_id}: {str(e)}", exc_info=True)
+        messages.error(request, f'Plant not found: {str(e)}')
+        return redirect('plant_list')
     
     if request.method == 'POST':
         try:
@@ -702,12 +711,16 @@ def plant_edit(request, plant_id):
             messages.success(request, 'Plant updated successfully!')
             return redirect('plant_detail', plant_id=plant.id)
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"plant_edit POST error for plant {plant_id}: {str(e)}")
+            logger.error(f"plant_edit POST error for plant {plant_id}: {str(e)}", exc_info=True)
             messages.error(request, f'Error updating plant: {str(e)}')
     
-    return render(request, 'admin/plant_form.html', {'plant': plant})
+    try:
+        logger.info(f"Rendering edit form for plant {plant_id}")
+        return render(request, 'admin/plant_form.html', {'plant': plant})
+    except Exception as e:
+        logger.error(f"Template rendering error for plant {plant_id}: {str(e)}", exc_info=True)
+        messages.error(request, f'Error loading edit form: {str(e)}')
+        return redirect('plant_list')
 
 @user_passes_test(is_admin)
 def plant_delete(request, plant_id):
