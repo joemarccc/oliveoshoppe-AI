@@ -124,20 +124,16 @@ class Plant(models.Model):
     @property
     def image_src(self):
         """Return a usable image URL from file or stored URL."""
-        if self.image:
+        # Prefer external URL if set (works on Render without file storage)
+        if self.image_url:
+            return self.image_url
+        # Try to get image file URL (may not exist on ephemeral filesystems)
+        if self.image and self.image.name:
             try:
-                # Check if file exists before trying to get URL
-                if hasattr(self.image, 'path'):
-                    import os
-                    if os.path.exists(self.image.path):
-                        return self.image.url
-                else:
-                    # No path attribute, try URL anyway (remote storage)
-                    return self.image.url
-            except (ValueError, IOError, OSError, AttributeError):
-                # Storage backend may raise if file missing or inaccessible
+                return self.image.url
+            except Exception:
                 pass
-        return self.image_url or ''
+        return ''
 
 class Order(models.Model):
     STATUS_CHOICES = [
