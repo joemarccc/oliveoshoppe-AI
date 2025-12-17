@@ -630,13 +630,23 @@ def plant_create(request):
                 'image_url': image_url,
             })
         
+        # Upload image to Supabase Storage if file provided
+        final_image_url = image_url
+        if image:
+            from .supabase_storage import upload_plant_image
+            upload_result = upload_plant_image(image, name)
+            if upload_result['success']:
+                final_image_url = upload_result['url']
+                messages.success(request, 'Image uploaded to cloud storage!')
+            else:
+                messages.warning(request, f"Image upload failed: {upload_result.get('error', 'Unknown error')}. Plant created without image.")
+        
         plant = Plant.objects.create(
             name=name,
             description=description,
             price=price,
             stock=stock,
-            image=image if image else None,
-            image_url=image_url or None,
+            image_url=final_image_url,
         )
         
         messages.success(request, 'Plant created successfully!')
@@ -660,32 +670,33 @@ def plant_edit(request, plant_id):
 
             # Handle image deletion
             if delete_image:
-                if plant.image:
-                    try:
-                        plant.image.delete(save=False)
-                    except Exception:
-                        pass
-                    plant.image = None
+                if plant.image_url:
+                    from .supabase_storage import delete_plant_image
+                    delete_plant_image(plant.image_url)
                 plant.image_url = None
             
-            # Handle new image upload
+            # Handle new image upload to Supabase Storage
             if 'image' in request.FILES:
-                if plant.image:
-                    try:
-                        plant.image.delete(save=False)
-                    except Exception:
-                        pass
-                plant.image = request.FILES['image']
-                plant.image_url = None
+                # Delete old image from Supabase if exists
+                if plant.image_url:
+                    from .supabase_storage import delete_plant_image
+                    delete_plant_image(plant.image_url)
+                
+                # Upload new image
+                from .supabase_storage import upload_plant_image
+                upload_result = upload_plant_image(request.FILES['image'], plant.name)
+                if upload_result['success']:
+                    plant.image_url = upload_result['url']
+                    messages.success(request, 'Image uploaded successfully!')
+                else:
+                    messages.error(request, f"Image upload failed: {upload_result.get('error', 'Unknown error')}")
             elif image_url and not delete_image:
+                # User provided a direct URL
+                if plant.image_url and plant.image_url != image_url:
+                    # Delete old Supabase image if switching to external URL
+                    from .supabase_storage import delete_plant_image
+                    delete_plant_image(plant.image_url)
                 plant.image_url = image_url
-                # Clear file when URL is provided
-                if plant.image:
-                    try:
-                        plant.image.delete(save=False)
-                    except Exception:
-                        pass
-                    plant.image = None
             
             plant.save()
             messages.success(request, 'Plant updated successfully!')
