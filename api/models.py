@@ -126,9 +126,16 @@ class Plant(models.Model):
         """Return a usable image URL from file or stored URL."""
         if self.image:
             try:
-                return self.image.url
-            except ValueError:
-                # Storage backend may raise if file missing
+                # Check if file exists before trying to get URL
+                if hasattr(self.image, 'path'):
+                    import os
+                    if os.path.exists(self.image.path):
+                        return self.image.url
+                else:
+                    # No path attribute, try URL anyway (remote storage)
+                    return self.image.url
+            except (ValueError, IOError, OSError, AttributeError):
+                # Storage backend may raise if file missing or inaccessible
                 pass
         return self.image_url or ''
 

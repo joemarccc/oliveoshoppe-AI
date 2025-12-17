@@ -30,7 +30,10 @@ class PlantAdmin(admin.ModelAdmin):
     ordering = ('name',)
 
     def image_preview(self, obj):
-        if obj.image_src:
-            return format_html('<img src="{}" style="max-height: 50px; max-width: 50px; object-fit: cover;" />', obj.image_src)
+        try:
+            if obj.image_src:
+                return format_html('<img src="{}" style="max-height: 50px; max-width: 50px; object-fit: cover;" />', obj.image_src)
+        except Exception:
+            pass
         return "No image"
     image_preview.short_description = 'Image Preview' 
