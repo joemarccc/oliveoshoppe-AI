@@ -656,10 +656,10 @@ def plant_create(request):
 
 @user_passes_test(is_admin)
 def plant_edit(request, plant_id):
-    try:
-        plant = get_object_or_404(Plant, id=plant_id)
-        
-        if request.method == 'POST':
+    plant = get_object_or_404(Plant, id=plant_id)
+    
+    if request.method == 'POST':
+        try:
             # Handle form submission
             plant.name = request.POST.get('name')
             plant.description = request.POST.get('description')
@@ -701,14 +701,13 @@ def plant_edit(request, plant_id):
             plant.save()
             messages.success(request, 'Plant updated successfully!')
             return redirect('plant_detail', plant_id=plant.id)
-        
-        return render(request, 'admin/plant_form.html', {'plant': plant})
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"plant_edit error for plant {plant_id}: {str(e)}")
-        messages.error(request, f'Error loading plant: {str(e)}')
-        return redirect('plant_list')
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"plant_edit POST error for plant {plant_id}: {str(e)}")
+            messages.error(request, f'Error updating plant: {str(e)}')
+    
+    return render(request, 'admin/plant_form.html', {'plant': plant})
 
 @user_passes_test(is_admin)
 def plant_delete(request, plant_id):
